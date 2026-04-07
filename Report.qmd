@@ -1,0 +1,92 @@
+---
+title: "What Makes Restaurants Click? A Data Mining Study Using Online Delivery Data"
+author: "Charan, Arjun, Rahul, Sushant"
+format:
+  html:
+    page-layout: article
+    theme:
+      light: journal
+      dark: darkly
+    toggle: true
+    toc: true
+    toc-depth: 3
+    toc-expand: true
+    number-sections: true
+editor: visual
+---
+
+# **Introduction**
+
+The emergence of online food delivery platforms such as Zomato and Swiggy has transformed the restaurant industry, making data crucial for understanding customer preferences and operational efficiency. These platforms generate rich data capturing both restaurant characteristics and delivery dynamics.
+
+This study uses two complementary datasets: one focusing on restaurant attributes such as ratings, cost, cuisine, and menu details, and the other on delivery-related factors including personnel details, location coordinates, timestamps, weather, traffic, and delivery time.
+
+By integrating these datasets, the study applies data mining techniques such as exploratory analysis, clustering, regression, and classification to identify patterns that differentiate successful restaurants from underperforming ones.
+
+The objective is to derive data-driven insights into the key factors that determine whether a restaurant “clicks” or “flops” in a competitive online ecosystem.
+
+------------------------------------------------------------------------
+
+# **Problem Statement**
+
+Despite the availability of extensive data from food delivery platforms, many restaurants struggle to understand the key factors that influence their success. High ratings do not always translate into higher order volumes, and efficient delivery does not always guarantee customer satisfaction.
+
+The core problem addressed in this study is:
+
+> **To identify and model the critical factors that determine restaurant success or failure by analyzing both restaurant characteristics and delivery performance using data mining techniques.**
+
+This includes understanding:
+
+-   Which restaurant features (e.g., cost, cuisine, ratings) most strongly influence customer preference
+
+-   How delivery-related factors (e.g., time taken, traffic, weather) impact overall satisfaction
+
+------------------------------------------------------------------------
+
+# **Objectives**
+
+The main objectives of this study are:
+
+### **Data Understanding and Preprocessing**
+
+-   Clean and preprocess both datasets (handle missing values, inconsistent timestamps, categorical encoding)
+
+-   Integrate restaurant and delivery datasets where applicable
+
+### **Exploratory Data Analysis (EDA)**
+
+-   Analyze distributions of ratings, cost, cuisine types, and delivery times
+
+-   Identify trends across cities and customer behavior patterns
+
+-   Examine relationships between variables such as rating vs cost, delivery time vs traffic
+
+### **Feature Analysis**
+
+-   Determine the most influential features affecting restaurant success
+
+-   Evaluate the impact of delivery conditions (weather, traffic, vehicle condition) on time taken
+
+### **Predictive Modeling**
+
+-   Build models to predict:
+
+    -   Restaurant success (e.g., high vs low rating/popularity)
+
+    -   Delivery time based on operational factors
+
+-   Apply techniques such as regression and classification
+
+### **Pattern Discovery**
+
+-   Use clustering to group restaurants based on performance and characteristics
+
+-   Identify hidden patterns linking cuisine, pricing, and customer ratings
+
+### **Insight Generation**
+
+-   Provide actionable recommendations for:
+
+    -   Restaurant owners (pricing, cuisine strategy, service improvement)
+
+    -   Delivery platforms (optimization of logistics and recommendations)
