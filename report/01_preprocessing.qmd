@@ -1,3 +1,118 @@
-## Next step
+---
+title: "Phase 1 - Preprocessing and Feature Engineering"
+format:
+  html:
+    page-layout: article
+    theme:
+      light: journal
+      dark: darkly
+    toggle: true
+    toc: true
+    toc-depth: 3
+    toc-expand: true
+    number-sections: true
+---
 
-Continue to the [EDA phase](02_eda.qmd).
+## Objective
+
+This phase converts the raw food delivery dataset into a clean, model-ready dataset by fixing data types, handling missing values, removing duplicates and outliers, and creating engineered features.
+
+## Libraries
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(skimr)
+library(knitr)
+library(kableExtra)
+```
+
+## Load cleaned dataset
+
+```{r}
+df <- read_csv("../output/food_delivery_clean.csv", show_col_types = FALSE)
+dim(df)
+```
+
+## Dataset overview
+
+```{r}
+glimpse(df)
+```
+
+## Final variables
+
+```{r}
+tribble(
+  ~Variable, ~Purpose,
+  "time_taken_min", "Target variable: delivery time in minutes",
+  "distance_km", "Engineered Haversine distance between restaurant and destination",
+  "pickup_delay_min", "Time gap between order placement and pickup",
+  "order_hour", "Hour of order",
+  "order_day_of_week", "Day of week extracted from order date",
+  "order_month", "Month extracted from order date",
+  "is_weekend", "Weekend indicator",
+  "age_group", "Binned delivery partner age",
+  "is_rush_hour", "Peak-time indicator",
+  "road_traffic_density_ord", "Ordinal traffic encoding"
+) |>
+  kbl(caption = "Important processed and engineered variables") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
+```
+
+## Missing values after preprocessing
+
+```{r}
+missing_summary <- df |>
+  summarise(across(everything(), ~ sum(is.na(.)))) |>
+  pivot_longer(everything(), names_to = "column", values_to = "missing_count") |>
+  mutate(missing_pct = round(100 * missing_count / nrow(df), 2)) |>
+  arrange(desc(missing_count))
+
+missing_summary |>
+  filter(missing_count > 0) |>
+  kbl(caption = "Remaining missing values after preprocessing") |>
+  kable_styling(full_width = FALSE)
+```
+
+## Summary statistics
+
+```{r}
+df |>
+  select(time_taken_min, distance_km, pickup_delay_min,
+         delivery_person_age, delivery_person_ratings,
+         multiple_deliveries, vehicle_condition) |>
+  summary()
+```
+
+## Distribution of engineered features
+
+### Distance
+
+```{r}
+ggplot(df, aes(x = distance_km)) +
+  geom_histogram(bins = 30, fill = "#01696f", color = "white") +
+  labs(title = "Distribution of Delivery Distance", x = "Distance (km)", y = "Count") +
+  theme_minimal(base_size = 13)
+```
+
+### Pickup delay
+
+```{r}
+ggplot(df, aes(x = pickup_delay_min)) +
+  geom_histogram(bins = 30, fill = "#a12c7b", color = "white") +
+  labs(title = "Distribution of Pickup Delay", x = "Pickup Delay (min)", y = "Count") +
+  theme_minimal(base_size = 13)
+```
+
+## Key preprocessing notes
+
+- Raw IDs were retained in the cleaned dataset but excluded later from modelling.
+- Traffic was ordinally encoded because it has natural order: Low < Medium < High < Jam.
+- Time-based features were created from date and order/pickup timestamps.
+- Distance was engineered from latitude and longitude because it is more meaningful than raw coordinates alone.
+
+## Navigation
+
+Continue to [EDA](02_eda.qmd)
+

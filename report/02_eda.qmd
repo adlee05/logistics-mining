@@ -1,3 +1,267 @@
+---
+title: "Phase 2 - Exploratory Data Analysis"
+format:
+  html:
+    page-layout: article
+    theme:
+      light: journal
+      dark: darkly
+    toggle: true
+    toc: true
+    toc-depth: 3
+    toc-expand: true
+    number-sections: true
+---
+
+## Objective
+
+This phase explores how delivery time changes with distance, traffic, weather, city type, vehicle type, and pickup delay.
+
+## Libraries
+
+```{r}
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+```
+
+## Load cleaned dataset
+
+```{r}
+df <- read_csv("../output/food_delivery_clean.csv", show_col_types = FALSE)
+dim(df)
+```
+
+## Dataset snapshot
+
+```{r}
+glimpse(df)
+```
+
+## Summary statistics
+
+```{r}
+df |>
+  summarise(
+    mean_time = mean(time_taken_min, na.rm = TRUE),
+    median_time = median(time_taken_min, na.rm = TRUE),
+    min_time = min(time_taken_min, na.rm = TRUE),
+    max_time = max(time_taken_min, na.rm = TRUE),
+    sd_time = sd(time_taken_min, na.rm = TRUE),
+    mean_distance = mean(distance_km, na.rm = TRUE),
+    mean_pickup_delay = mean(pickup_delay_min, na.rm = TRUE)
+  ) |>
+  kbl(caption = "Summary of key numeric variables") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
+```
+
+## Missing values
+
+```{r}
+missing_summary <- df |>
+  summarise(across(everything(), ~ sum(is.na(.)))) |>
+  pivot_longer(everything(), names_to = "column", values_to = "missing_count") |>
+  mutate(missing_pct = round(100 * missing_count / nrow(df), 2)) |>
+  arrange(desc(missing_count))
+
+missing_summary |>
+  filter(missing_count > 0) |>
+  kbl(caption = "Missing values after preprocessing") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
+```
+
+## Distribution of delivery time
+
+```{r}
+ggplot(df, aes(x = time_taken_min)) +
+  geom_histogram(bins = 30, fill = "#01696f", color = "white") +
+  geom_density(aes(y = after_stat(count)), color = "#a12c7b", linewidth = 1) +
+  labs(
+    title = "Distribution of Delivery Time",
+    x = "Time Taken (min)",
+    y = "Count"
+  ) +
+  theme_minimal(base_size = 13)
+```
+
+## Correlation heatmap
+
+```{r}
+num_df <- df |>
+  select(where(is.numeric)) |>
+  select(-any_of("id"))
+
+cor_mat <- cor(num_df, use = "pairwise.complete.obs")
+
+cor_long <- as.data.frame(cor_mat) |>
+  tibble::rownames_to_column("var1") |>
+  pivot_longer(-var1, names_to = "var2", values_to = "correlation")
+
+ggplot(cor_long, aes(var1, var2, fill = correlation)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "#b2182b", mid = "white", high = "#01696f", midpoint = 0) +
+  coord_fixed() +
+  labs(
+    title = "Correlation Heatmap of Numeric Variables",
+    x = NULL,
+    y = NULL,
+    fill = "Corr"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Distance versus time
+
+```{r}
+ggplot(df, aes(x = distance_km, y = time_taken_min)) +
+  geom_point(alpha = 0.35, color = "#01696f") +
+  geom_smooth(method = "lm", se = TRUE, color = "#a12c7b") +
+  labs(
+    title = "Delivery Time vs Distance",
+    x = "Distance (km)",
+    y = "Time Taken (min)"
+  ) +
+  theme_minimal(base_size = 13)
+```
+
+## Traffic effect
+
+```{r}
+ggplot(df, aes(x = road_traffic_density, y = time_taken_min, fill = road_traffic_density)) +
+  geom_boxplot(alpha = 0.8, outlier.alpha = 0.2) +
+  labs(
+    title = "Delivery Time by Traffic Density",
+    x = "Traffic Density",
+    y = "Time Taken (min)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none")
+```
+
+## Weather effect
+
+```{r}
+ggplot(df, aes(x = weather_conditions, y = time_taken_min, fill = weather_conditions)) +
+  geom_boxplot(alpha = 0.8, outlier.alpha = 0.2) +
+  labs(
+    title = "Delivery Time by Weather",
+    x = "Weather",
+    y = "Time Taken (min)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 20, hjust = 1))
+```
+
+## City and festival effect
+
+```{r}
+ggplot(df, aes(x = city, y = time_taken_min, fill = city)) +
+  geom_boxplot(alpha = 0.8, outlier.alpha = 0.2) +
+  labs(
+    title = "Delivery Time by City",
+    x = "City",
+    y = "Time Taken (min)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none")
+```
+
+```{r}
+ggplot(df, aes(x = festival, y = time_taken_min, fill = festival)) +
+  geom_boxplot(alpha = 0.8, outlier.alpha = 0.2) +
+  labs(
+    title = "Delivery Time by Festival",
+    x = "Festival",
+    y = "Time Taken (min)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none")
+```
+
+## Pickup delay effect
+
+```{r}
+ggplot(df, aes(x = pickup_delay_min, y = time_taken_min)) +
+  geom_point(alpha = 0.35, color = "#01696f") +
+  geom_smooth(method = "lm", se = TRUE, color = "#a12c7b") +
+  labs(
+    title = "Pickup Delay vs Delivery Time",
+    x = "Pickup Delay (min)",
+    y = "Time Taken (min)"
+  ) +
+  theme_minimal(base_size = 13)
+```
+
+## Age and rating distributions
+
+```{r}
+ggplot(df, aes(x = delivery_person_age)) +
+  geom_histogram(bins = 25, fill = "#01696f", color = "white") +
+  labs(title = "Distribution of Age", x = "Age", y = "Count") +
+  theme_minimal(base_size = 13)
+```
+
+```{r}
+ggplot(df, aes(x = delivery_person_ratings)) +
+  geom_histogram(bins = 25, fill = "#a12c7b", color = "white") +
+  labs(title = "Distribution of Ratings", x = "Ratings", y = "Count") +
+  theme_minimal(base_size = 13)
+```
+
+## Vehicle type effect
+
+```{r}
+ggplot(df, aes(x = type_of_vehicle, y = time_taken_min, fill = type_of_vehicle)) +
+  geom_boxplot(alpha = 0.8, outlier.alpha = 0.2) +
+  labs(
+    title = "Delivery Time by Vehicle Type",
+    x = "Vehicle Type",
+    y = "Time Taken (min)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none")
+```
+
+## Category summaries
+
+```{r}
+weather_summary <- df |>
+  group_by(weather_conditions) |>
+  summarise(
+    count = n(),
+    avg_time = mean(time_taken_min, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  arrange(desc(avg_time))
+
+weather_summary |>
+  kbl(caption = "Average delivery time by weather condition") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
+```
+
+```{r}
+city_summary <- df |>
+  group_by(city) |>
+  summarise(
+    count = n(),
+    avg_time = mean(time_taken_min, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  arrange(desc(avg_time))
+
+city_summary |>
+  kbl(caption = "Average delivery time by city") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
+```
+
+## Key observations
+
+- Delivery time generally increases with distance.
+- Heavy traffic and jam conditions increase delivery time more than low traffic.
+- Pickup delay also contributes directly to final delivery time.
+- Weather and city category create visible differences in delivery performance.
+
 ## Navigation
 
 - Back to [Preprocessing](01_preprocessing.qmd)
