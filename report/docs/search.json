@@ -621,5 +621,61 @@
     "title": "Making the Data Ready for Business",
     "section": "11 What This Phase Made Possible",
     "text": "11 What This Phase Made Possible\nEvery decision in preprocessing was made in service of the analysis that follows.\n\n\nCode\ntibble(\n  `Decision Made`             = c(\n    \"Dropped rows with missing target\",\n    \"Engineered distance from coordinates\",\n    \"Engineered pickup delay from timestamps\",\n    \"Extracted rush hour flag\",\n    \"Ordinal-encoded traffic density\",\n    \"Removed outliers with IQR method\"\n  ),\n  `What It Enables`           = c(\n    \"Reliable model training with no label noise\",\n    \"A single meaningful distance feature instead of 4 raw columns\",\n    \"Exposing the most actionable delay factor in the dataset\",\n    \"Capturing time-of-day operational pressure as a binary signal\",\n    \"Preserving the natural order of traffic conditions for regression\",\n    \"Predictions that apply to typical orders, not edge cases\"\n  )\n) |&gt;\n  kbl(caption = \"How each preprocessing decision serves the downstream analysis\") |&gt;\n  kable_styling(full_width = TRUE, bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nHow each preprocessing decision serves the downstream analysis\n\n\nDecision Made\nWhat It Enables\n\n\n\n\nDropped rows with missing target\nReliable model training with no label noise\n\n\nEngineered distance from coordinates\nA single meaningful distance feature instead of 4 raw columns\n\n\nEngineered pickup delay from timestamps\nExposing the most actionable delay factor in the dataset\n\n\nExtracted rush hour flag\nCapturing time-of-day operational pressure as a binary signal\n\n\nOrdinal-encoded traffic density\nPreserving the natural order of traffic conditions for regression\n\n\nRemoved outliers with IQR method\nPredictions that apply to typical orders, not edge cases\n\n\n\n\n\nThe data is now trusted, structured, and ready. The investigation begins.\n\nContinue to Phase 2 — Exploratory Data Analysis →"
+  },
+  {
+    "objectID": "index.html#the-question-every-restaurant-owner-is-asking",
+    "href": "index.html#the-question-every-restaurant-owner-is-asking",
+    "title": "What Makes a Restaurant Click?",
+    "section": "1 The Question Every Restaurant Owner Is Asking",
+    "text": "1 The Question Every Restaurant Owner Is Asking\nTwo restaurants open on the same street, in the same city, selling similar food at similar prices.\nOne becomes a customer favourite — five-star reviews, consistent orders, loyal repeat customers. The other struggles — low ratings, declining orders, no visibility on the platform.\nWhat separates them?\nIs it the cuisine? The pricing? The delivery speed? The location? Or is it something less obvious — a combination of factors that only the data can reveal?\nThat is the question this study sets out to answer."
+  },
+  {
+    "objectID": "index.html#why-this-matters",
+    "href": "index.html#why-this-matters",
+    "title": "What Makes a Restaurant Click?",
+    "section": "2 Why This Matters",
+    "text": "2 Why This Matters\nThe rise of platforms like Zomato and Swiggy has fundamentally changed how restaurants compete. A restaurant’s visibility, reputation, and survival are now shaped by data — ratings, delivery times, customer reviews, and order volumes — all of it logged, ranked, and surfaced to millions of users every day.\nThis creates both a challenge and an opportunity:\n\nThe challenge: Restaurants have more competition than ever, and a few bad reviews or slow deliveries can push them off the first page of results permanently.\nThe opportunity: The same data that creates the problem can also solve it — if analysed correctly.\n\nThis project uses data mining to turn that raw operational data into actionable business insight."
+  },
+  {
+    "objectID": "index.html#the-datasets",
+    "href": "index.html#the-datasets",
+    "title": "What Makes a Restaurant Click?",
+    "section": "3 The Datasets",
+    "text": "3 The Datasets\nWe work with two complementary datasets that together capture the full picture of online food delivery:\n\n\n\n\n\n\n\n\nDataset\nWhat It Contains\nBusiness Relevance\n\n\n\n\nRestaurant Data\nRatings, cost for two, cuisine type, location, menu details, online order availability\nCaptures what the restaurant offers and how customers perceive it\n\n\nDelivery Operations Data\nDelivery personnel details, timestamps, weather, traffic, GPS coordinates, vehicle type\nCaptures how efficiently the restaurant’s orders actually reach customers\n\n\n\nTogether, these datasets let us connect what happens inside the restaurant with what happens on the road — and understand how both affect whether a restaurant succeeds."
+  },
+  {
+    "objectID": "index.html#the-problem-we-are-solving",
+    "href": "index.html#the-problem-we-are-solving",
+    "title": "What Makes a Restaurant Click?",
+    "section": "4 The Problem We Are Solving",
+    "text": "4 The Problem We Are Solving\nDespite the availability of rich platform data, most restaurants operate on intuition rather than evidence.\n\n“Should we lower our price or improve our rating?” “Is our delivery time hurting us or is it just the traffic?” “Which cuisine type performs best in our city?”\n\nThese are real business questions. Answering them requires more than just looking at averages — it requires data mining: finding patterns, building models, and extracting insight from thousands of records.\nThe core problem this study addresses:\n\nWhat are the critical factors that determine whether a restaurant thrives or struggles in the online food delivery ecosystem — and can we model them?"
+  },
+  {
+    "objectID": "index.html#what-we-do",
+    "href": "index.html#what-we-do",
+    "title": "What Makes a Restaurant Click?",
+    "section": "5 What We Do",
+    "text": "5 What We Do\nThis study applies a full data mining pipeline across four phases:\n\n\n\n\n\n\n\n\nPhase\nWhat We Do\nBusiness Output\n\n\n\n\nPhase 1 — Preprocessing\nClean both datasets, fix types, handle missing values, engineer features like delivery distance and pickup delay\nA trusted, model-ready dataset\n\n\nPhase 2 — EDA\nExplore distributions, spot patterns, compare segments, visualise relationships\nAnswers to the “what is happening?” questions\n\n\nPhase 3 — Modelling\nBuild regression and classification models to predict delivery time and restaurant success\nPredictive tools the business can use\n\n\nPhase 4 — Insights\nTranslate findings into recommendations for restaurant owners and platform operators\nSomething a manager can actually act on"
+  },
+  {
+    "objectID": "index.html#who-this-is-for",
+    "href": "index.html#who-this-is-for",
+    "title": "What Makes a Restaurant Click?",
+    "section": "6 Who This Is For",
+    "text": "6 Who This Is For\nThis study produces insights useful for two audiences:\nRestaurant owners — understand which factors in your control (pricing, cuisine, service consistency) most strongly drive ratings and order volume.\nDelivery platform operators — understand which operational factors (traffic management, rider assignment, pickup timing) most directly reduce delivery time and improve customer experience."
+  },
+  {
+    "objectID": "index.html#the-story-that-follows",
+    "href": "index.html#the-story-that-follows",
+    "title": "What Makes a Restaurant Click?",
+    "section": "7 The Story That Follows",
+    "text": "7 The Story That Follows\nThe three chapters of this project each answer a different part of the central question:\n\nPhase 1 asks: Can we trust this data? — and makes it trustworthy.\nPhase 2 asks: What patterns exist? — and finds them.\nPhase 3 asks: Can we predict outcomes? — and builds models that do.\n\nBy the end, we will have a data-driven answer to the question that opened this study:\n\nWhat makes a restaurant click?"
+  },
+  {
+    "objectID": "index.html#navigate-the-project",
+    "href": "index.html#navigate-the-project",
+    "title": "What Makes a Restaurant Click?",
+    "section": "8 Navigate the Project",
+    "text": "8 Navigate the Project\n\nPhase 1 — Preprocessing and Feature Engineering\nPhase 2 — Exploratory Data Analysis\nPhase 3 — Predictive Modelling"
   }
 ]

@@ -1,6 +1,7 @@
 ---
-title: "What Makes Restaurants Click? A Data Mining Study Using Online Delivery Data"
-author: "Charan, Arjun, Rahul, Sushant"
+title: "What Makes a Restaurant Click?"
+subtitle: "A Data Mining Study on Online Food Delivery"
+author: "Charan Malampati, Arjun, Rahul, Sushant | DWDM Course Project"
 format:
   html:
     page-layout: article
@@ -12,81 +13,107 @@ format:
     toc-depth: 3
     toc-expand: true
     number-sections: true
-editor: visual
+execute:
+  warning: false
+  message: false
+  echo: false
 ---
 
-# **Introduction**
+------------------------------------------------------------------------
 
-The emergence of online food delivery platforms such as Zomato and Swiggy has transformed the restaurant industry, making data crucial for understanding customer preferences and operational efficiency. These platforms generate rich data capturing both restaurant characteristics and delivery dynamics.
+## The Question Every Restaurant Owner Is Asking
 
-This study uses two complementary datasets: one focusing on restaurant attributes such as ratings, cost, cuisine, and menu details, and the other on delivery-related factors including personnel details, location coordinates, timestamps, weather, traffic, and delivery time.
+Two restaurants open on the same street, in the same city, selling similar food at similar prices.
 
-By integrating these datasets, the study applies data mining techniques such as exploratory analysis, clustering, regression, and classification to identify patterns that differentiate successful restaurants from underperforming ones.
+One becomes a customer favourite — five-star reviews, consistent orders, loyal repeat customers. The other struggles — low ratings, declining orders, no visibility on the platform.
 
-The objective is to derive data-driven insights into the key factors that determine whether a restaurant “clicks” or “flops” in a competitive online ecosystem.
+What separates them?
+
+Is it the cuisine? The pricing? The delivery speed? The location? Or is it something less obvious — a combination of factors that only the data can reveal?
+
+That is the question this study sets out to answer.
 
 ------------------------------------------------------------------------
 
-# **Problem Statement**
+## Why This Matters
 
-Despite the availability of extensive data from food delivery platforms, many restaurants struggle to understand the key factors that influence their success. High ratings do not always translate into higher order volumes, and efficient delivery does not always guarantee customer satisfaction.
+The rise of platforms like Zomato and Swiggy has fundamentally changed how restaurants compete. A restaurant's visibility, reputation, and survival are now shaped by data — ratings, delivery times, customer reviews, and order volumes — all of it logged, ranked, and surfaced to millions of users every day.
 
-The core problem addressed in this study is:
+This creates both a challenge and an opportunity:
 
-> **To identify and model the critical factors that determine restaurant success or failure by analyzing both restaurant characteristics and delivery performance using data mining techniques.**
+-   **The challenge:** Restaurants have more competition than ever, and a few bad reviews or slow deliveries can push them off the first page of results permanently.
+-   **The opportunity:** The same data that creates the problem can also solve it — if analysed correctly.
 
-This includes understanding:
-
--   Which restaurant features (e.g., cost, cuisine, ratings) most strongly influence customer preference
-
--   How delivery-related factors (e.g., time taken, traffic, weather) impact overall satisfaction
+This project uses data mining to turn that raw operational data into actionable business insight.
 
 ------------------------------------------------------------------------
 
-# **Objectives**
+## The Datasets
 
-The main objectives of this study are:
+We work with two complementary datasets that together capture the full picture of online food delivery:
 
-### **Data Understanding and Preprocessing**
+| Dataset | What It Contains | Business Relevance |
+|------------------------|------------------------|------------------------|
+| **Restaurant Data** | Ratings, cost for two, cuisine type, location, menu details, online order availability | Captures what the restaurant offers and how customers perceive it |
+| **Delivery Operations Data** | Delivery personnel details, timestamps, weather, traffic, GPS coordinates, vehicle type | Captures how efficiently the restaurant's orders actually reach customers |
 
--   Clean and preprocess both datasets (handle missing values, inconsistent timestamps, categorical encoding)
+Together, these datasets let us connect **what happens inside the restaurant** with **what happens on the road** — and understand how both affect whether a restaurant succeeds.
 
--   Integrate restaurant and delivery datasets where applicable
+------------------------------------------------------------------------
 
-### **Exploratory Data Analysis (EDA)**
+## The Problem We Are Solving
 
--   Analyze distributions of ratings, cost, cuisine types, and delivery times
+Despite the availability of rich platform data, most restaurants operate on intuition rather than evidence.
 
--   Identify trends across cities and customer behavior patterns
+> *"Should we lower our price or improve our rating?"* *"Is our delivery time hurting us or is it just the traffic?"* *"Which cuisine type performs best in our city?"*
 
--   Examine relationships between variables such as rating vs cost, delivery time vs traffic
+These are real business questions. Answering them requires more than just looking at averages — it requires data mining: finding patterns, building models, and extracting insight from thousands of records.
 
-### **Feature Analysis**
+The core problem this study addresses:
 
--   Determine the most influential features affecting restaurant success
+> **What are the critical factors that determine whether a restaurant thrives or struggles in the online food delivery ecosystem — and can we model them?**
 
--   Evaluate the impact of delivery conditions (weather, traffic, vehicle condition) on time taken
+------------------------------------------------------------------------
 
-### **Predictive Modeling**
+## What We Do
 
--   Build models to predict:
+This study applies a full data mining pipeline across four phases:
 
-    -   Restaurant success (e.g., high vs low rating/popularity)
+| Phase | What We Do | Business Output |
+|------------------------|------------------------|------------------------|
+| **Phase 1 — Preprocessing** | Clean both datasets, fix types, handle missing values, engineer features like delivery distance and pickup delay | A trusted, model-ready dataset |
+| **Phase 2 — EDA** | Explore distributions, spot patterns, compare segments, visualise relationships | Answers to the "what is happening?" questions |
+| **Phase 3 — Modelling** | Build regression and classification models to predict delivery time and restaurant success | Predictive tools the business can use |
+| **Phase 4 — Insights** | Translate findings into recommendations for restaurant owners and platform operators | Something a manager can actually act on |
 
-    -   Delivery time based on operational factors
+------------------------------------------------------------------------
 
--   Apply techniques such as regression and classification
+## Who This Is For
 
-### **Pattern Discovery**
+This study produces insights useful for two audiences:
 
--   Use clustering to group restaurants based on performance and characteristics
+**Restaurant owners** — understand which factors in your control (pricing, cuisine, service consistency) most strongly drive ratings and order volume.
 
--   Identify hidden patterns linking cuisine, pricing, and customer ratings
+**Delivery platform operators** — understand which operational factors (traffic management, rider assignment, pickup timing) most directly reduce delivery time and improve customer experience.
 
-### **Insight Generation**
+------------------------------------------------------------------------
 
--   Provide actionable recommendations for:
+## The Story That Follows
 
-    -   Restaurant owners (pricing, cuisine strategy, service improvement)
+The three chapters of this project each answer a different part of the central question:
 
-    -   Delivery platforms (optimization of logistics and recommendations)
+-   **Phase 1** asks: *Can we trust this data?* — and makes it trustworthy.
+-   **Phase 2** asks: *What patterns exist?* — and finds them.
+-   **Phase 3** asks: *Can we predict outcomes?* — and builds models that do.
+
+By the end, we will have a data-driven answer to the question that opened this study:
+
+> What makes a restaurant click?
+
+------------------------------------------------------------------------
+
+## Navigate the Project
+
+-   [Phase 1 — Preprocessing and Feature Engineering](./01_preprocessing.html)
+-   [Phase 2 — Exploratory Data Analysis](./02_eda.html)
+-   [Phase 3 — Predictive Modelling](./03_modelling.html)

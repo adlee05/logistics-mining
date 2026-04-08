@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Charan, Arjun, Rahul, Sushant">
+<meta name="author" content="Charan Malampati, Arjun, Rahul, Sushant | DWDM Course Project">
 
-<title>What Makes Restaurants Click? A Data Mining Study Using Online Delivery Data – DWDM Project - Food Delivery Time Prediction</title>
+<title>What Makes a Restaurant Click? – DWDM Project - Food Delivery Time Prediction</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -4018,17 +4018,14 @@ vertical-align: -.125em;
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">1</span> <strong>Introduction</strong></a></li>
-  <li><a href="#problem-statement" id="toc-problem-statement" class="nav-link" data-scroll-target="#problem-statement"><span class="header-section-number">2</span> <strong>Problem Statement</strong></a></li>
-  <li><a href="#objectives" id="toc-objectives" class="nav-link" data-scroll-target="#objectives"><span class="header-section-number">3</span> <strong>Objectives</strong></a>
-  <ul class="collapse">
-  <li><a href="#data-understanding-and-preprocessing" id="toc-data-understanding-and-preprocessing" class="nav-link" data-scroll-target="#data-understanding-and-preprocessing"><span class="header-section-number">3.0.1</span> <strong>Data Understanding and Preprocessing</strong></a></li>
-  <li><a href="#exploratory-data-analysis-eda" id="toc-exploratory-data-analysis-eda" class="nav-link" data-scroll-target="#exploratory-data-analysis-eda"><span class="header-section-number">3.0.2</span> <strong>Exploratory Data Analysis (EDA)</strong></a></li>
-  <li><a href="#feature-analysis" id="toc-feature-analysis" class="nav-link" data-scroll-target="#feature-analysis"><span class="header-section-number">3.0.3</span> <strong>Feature Analysis</strong></a></li>
-  <li><a href="#predictive-modeling" id="toc-predictive-modeling" class="nav-link" data-scroll-target="#predictive-modeling"><span class="header-section-number">3.0.4</span> <strong>Predictive Modeling</strong></a></li>
-  <li><a href="#pattern-discovery" id="toc-pattern-discovery" class="nav-link" data-scroll-target="#pattern-discovery"><span class="header-section-number">3.0.5</span> <strong>Pattern Discovery</strong></a></li>
-  <li><a href="#insight-generation" id="toc-insight-generation" class="nav-link" data-scroll-target="#insight-generation"><span class="header-section-number">3.0.6</span> <strong>Insight Generation</strong></a></li>
-  </ul></li>
+  <li><a href="#the-question-every-restaurant-owner-is-asking" id="toc-the-question-every-restaurant-owner-is-asking" class="nav-link active" data-scroll-target="#the-question-every-restaurant-owner-is-asking"><span class="header-section-number">1</span> The Question Every Restaurant Owner Is Asking</a></li>
+  <li><a href="#why-this-matters" id="toc-why-this-matters" class="nav-link" data-scroll-target="#why-this-matters"><span class="header-section-number">2</span> Why This Matters</a></li>
+  <li><a href="#the-datasets" id="toc-the-datasets" class="nav-link" data-scroll-target="#the-datasets"><span class="header-section-number">3</span> The Datasets</a></li>
+  <li><a href="#the-problem-we-are-solving" id="toc-the-problem-we-are-solving" class="nav-link" data-scroll-target="#the-problem-we-are-solving"><span class="header-section-number">4</span> The Problem We Are Solving</a></li>
+  <li><a href="#what-we-do" id="toc-what-we-do" class="nav-link" data-scroll-target="#what-we-do"><span class="header-section-number">5</span> What We Do</a></li>
+  <li><a href="#who-this-is-for" id="toc-who-this-is-for" class="nav-link" data-scroll-target="#who-this-is-for"><span class="header-section-number">6</span> Who This Is For</a></li>
+  <li><a href="#the-story-that-follows" id="toc-the-story-that-follows" class="nav-link" data-scroll-target="#the-story-that-follows"><span class="header-section-number">7</span> The Story That Follows</a></li>
+  <li><a href="#navigate-the-project" id="toc-navigate-the-project" class="nav-link" data-scroll-target="#navigate-the-project"><span class="header-section-number">8</span> Navigate the Project</a></li>
   </ul>
 </nav>
     </div>
@@ -4038,7 +4035,8 @@ vertical-align: -.125em;
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">What Makes Restaurants Click? A Data Mining Study Using Online Delivery Data</h1>
+<h1 class="title">What Makes a Restaurant Click?</h1>
+<p class="subtitle lead">A Data Mining Study on Online Food Delivery</p>
 </div>
 
 
@@ -4048,7 +4046,7 @@ vertical-align: -.125em;
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>Charan, Arjun, Rahul, Sushant </p>
+             <p>Charan Malampati, Arjun, Rahul, Sushant | DWDM Course Project </p>
           </div>
   </div>
     
@@ -4061,83 +4059,143 @@ vertical-align: -.125em;
 </header>
 
 
-<section id="introduction" class="level1" data-number="1">
-<h1 data-number="1"><span class="header-section-number">1</span> <strong>Introduction</strong></h1>
-<p>The emergence of online food delivery platforms such as Zomato and Swiggy has transformed the restaurant industry, making data crucial for understanding customer preferences and operational efficiency. These platforms generate rich data capturing both restaurant characteristics and delivery dynamics.</p>
-<p>This study uses two complementary datasets: one focusing on restaurant attributes such as ratings, cost, cuisine, and menu details, and the other on delivery-related factors including personnel details, location coordinates, timestamps, weather, traffic, and delivery time.</p>
-<p>By integrating these datasets, the study applies data mining techniques such as exploratory analysis, clustering, regression, and classification to identify patterns that differentiate successful restaurants from underperforming ones.</p>
-<p>The objective is to derive data-driven insights into the key factors that determine whether a restaurant “clicks” or “flops” in a competitive online ecosystem.</p>
+<hr>
+<section id="the-question-every-restaurant-owner-is-asking" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="the-question-every-restaurant-owner-is-asking"><span class="header-section-number">1</span> The Question Every Restaurant Owner Is Asking</h2>
+<p>Two restaurants open on the same street, in the same city, selling similar food at similar prices.</p>
+<p>One becomes a customer favourite — five-star reviews, consistent orders, loyal repeat customers. The other struggles — low ratings, declining orders, no visibility on the platform.</p>
+<p>What separates them?</p>
+<p>Is it the cuisine? The pricing? The delivery speed? The location? Or is it something less obvious — a combination of factors that only the data can reveal?</p>
+<p>That is the question this study sets out to answer.</p>
 <hr>
 </section>
-<section id="problem-statement" class="level1" data-number="2">
-<h1 data-number="2"><span class="header-section-number">2</span> <strong>Problem Statement</strong></h1>
-<p>Despite the availability of extensive data from food delivery platforms, many restaurants struggle to understand the key factors that influence their success. High ratings do not always translate into higher order volumes, and efficient delivery does not always guarantee customer satisfaction.</p>
-<p>The core problem addressed in this study is:</p>
+<section id="why-this-matters" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="why-this-matters"><span class="header-section-number">2</span> Why This Matters</h2>
+<p>The rise of platforms like Zomato and Swiggy has fundamentally changed how restaurants compete. A restaurant’s visibility, reputation, and survival are now shaped by data — ratings, delivery times, customer reviews, and order volumes — all of it logged, ranked, and surfaced to millions of users every day.</p>
+<p>This creates both a challenge and an opportunity:</p>
+<ul>
+<li><strong>The challenge:</strong> Restaurants have more competition than ever, and a few bad reviews or slow deliveries can push them off the first page of results permanently.</li>
+<li><strong>The opportunity:</strong> The same data that creates the problem can also solve it — if analysed correctly.</li>
+</ul>
+<p>This project uses data mining to turn that raw operational data into actionable business insight.</p>
+<hr>
+</section>
+<section id="the-datasets" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="the-datasets"><span class="header-section-number">3</span> The Datasets</h2>
+<p>We work with two complementary datasets that together capture the full picture of online food delivery:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Dataset</th>
+<th>What It Contains</th>
+<th>Business Relevance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Restaurant Data</strong></td>
+<td>Ratings, cost for two, cuisine type, location, menu details, online order availability</td>
+<td>Captures what the restaurant offers and how customers perceive it</td>
+</tr>
+<tr class="even">
+<td><strong>Delivery Operations Data</strong></td>
+<td>Delivery personnel details, timestamps, weather, traffic, GPS coordinates, vehicle type</td>
+<td>Captures how efficiently the restaurant’s orders actually reach customers</td>
+</tr>
+</tbody>
+</table>
+<p>Together, these datasets let us connect <strong>what happens inside the restaurant</strong> with <strong>what happens on the road</strong> — and understand how both affect whether a restaurant succeeds.</p>
+<hr>
+</section>
+<section id="the-problem-we-are-solving" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="the-problem-we-are-solving"><span class="header-section-number">4</span> The Problem We Are Solving</h2>
+<p>Despite the availability of rich platform data, most restaurants operate on intuition rather than evidence.</p>
 <blockquote class="blockquote">
-<p><strong>To identify and model the critical factors that determine restaurant success or failure by analyzing both restaurant characteristics and delivery performance using data mining techniques.</strong></p>
+<p><em>“Should we lower our price or improve our rating?”</em> <em>“Is our delivery time hurting us or is it just the traffic?”</em> <em>“Which cuisine type performs best in our city?”</em></p>
 </blockquote>
-<p>This includes understanding:</p>
-<ul>
-<li><p>Which restaurant features (e.g., cost, cuisine, ratings) most strongly influence customer preference</p></li>
-<li><p>How delivery-related factors (e.g., time taken, traffic, weather) impact overall satisfaction</p></li>
-</ul>
+<p>These are real business questions. Answering them requires more than just looking at averages — it requires data mining: finding patterns, building models, and extracting insight from thousands of records.</p>
+<p>The core problem this study addresses:</p>
+<blockquote class="blockquote">
+<p><strong>What are the critical factors that determine whether a restaurant thrives or struggles in the online food delivery ecosystem — and can we model them?</strong></p>
+</blockquote>
 <hr>
 </section>
-<section id="objectives" class="level1" data-number="3">
-<h1 data-number="3"><span class="header-section-number">3</span> <strong>Objectives</strong></h1>
-<p>The main objectives of this study are:</p>
-<section id="data-understanding-and-preprocessing" class="level3" data-number="3.0.1">
-<h3 data-number="3.0.1" class="anchored" data-anchor-id="data-understanding-and-preprocessing"><span class="header-section-number">3.0.1</span> <strong>Data Understanding and Preprocessing</strong></h3>
-<ul>
-<li><p>Clean and preprocess both datasets (handle missing values, inconsistent timestamps, categorical encoding)</p></li>
-<li><p>Integrate restaurant and delivery datasets where applicable</p></li>
-</ul>
+<section id="what-we-do" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="what-we-do"><span class="header-section-number">5</span> What We Do</h2>
+<p>This study applies a full data mining pipeline across four phases:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Phase</th>
+<th>What We Do</th>
+<th>Business Output</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Phase 1 — Preprocessing</strong></td>
+<td>Clean both datasets, fix types, handle missing values, engineer features like delivery distance and pickup delay</td>
+<td>A trusted, model-ready dataset</td>
+</tr>
+<tr class="even">
+<td><strong>Phase 2 — EDA</strong></td>
+<td>Explore distributions, spot patterns, compare segments, visualise relationships</td>
+<td>Answers to the “what is happening?” questions</td>
+</tr>
+<tr class="odd">
+<td><strong>Phase 3 — Modelling</strong></td>
+<td>Build regression and classification models to predict delivery time and restaurant success</td>
+<td>Predictive tools the business can use</td>
+</tr>
+<tr class="even">
+<td><strong>Phase 4 — Insights</strong></td>
+<td>Translate findings into recommendations for restaurant owners and platform operators</td>
+<td>Something a manager can actually act on</td>
+</tr>
+</tbody>
+</table>
+<hr>
 </section>
-<section id="exploratory-data-analysis-eda" class="level3" data-number="3.0.2">
-<h3 data-number="3.0.2" class="anchored" data-anchor-id="exploratory-data-analysis-eda"><span class="header-section-number">3.0.2</span> <strong>Exploratory Data Analysis (EDA)</strong></h3>
-<ul>
-<li><p>Analyze distributions of ratings, cost, cuisine types, and delivery times</p></li>
-<li><p>Identify trends across cities and customer behavior patterns</p></li>
-<li><p>Examine relationships between variables such as rating vs cost, delivery time vs traffic</p></li>
-</ul>
+<section id="who-this-is-for" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="who-this-is-for"><span class="header-section-number">6</span> Who This Is For</h2>
+<p>This study produces insights useful for two audiences:</p>
+<p><strong>Restaurant owners</strong> — understand which factors in your control (pricing, cuisine, service consistency) most strongly drive ratings and order volume.</p>
+<p><strong>Delivery platform operators</strong> — understand which operational factors (traffic management, rider assignment, pickup timing) most directly reduce delivery time and improve customer experience.</p>
+<hr>
 </section>
-<section id="feature-analysis" class="level3" data-number="3.0.3">
-<h3 data-number="3.0.3" class="anchored" data-anchor-id="feature-analysis"><span class="header-section-number">3.0.3</span> <strong>Feature Analysis</strong></h3>
+<section id="the-story-that-follows" class="level2" data-number="7">
+<h2 data-number="7" class="anchored" data-anchor-id="the-story-that-follows"><span class="header-section-number">7</span> The Story That Follows</h2>
+<p>The three chapters of this project each answer a different part of the central question:</p>
 <ul>
-<li><p>Determine the most influential features affecting restaurant success</p></li>
-<li><p>Evaluate the impact of delivery conditions (weather, traffic, vehicle condition) on time taken</p></li>
+<li><strong>Phase 1</strong> asks: <em>Can we trust this data?</em> — and makes it trustworthy.</li>
+<li><strong>Phase 2</strong> asks: <em>What patterns exist?</em> — and finds them.</li>
+<li><strong>Phase 3</strong> asks: <em>Can we predict outcomes?</em> — and builds models that do.</li>
 </ul>
+<p>By the end, we will have a data-driven answer to the question that opened this study:</p>
+<blockquote class="blockquote">
+<p>What makes a restaurant click?</p>
+</blockquote>
+<hr>
 </section>
-<section id="predictive-modeling" class="level3" data-number="3.0.4">
-<h3 data-number="3.0.4" class="anchored" data-anchor-id="predictive-modeling"><span class="header-section-number">3.0.4</span> <strong>Predictive Modeling</strong></h3>
+<section id="navigate-the-project" class="level2" data-number="8">
+<h2 data-number="8" class="anchored" data-anchor-id="navigate-the-project"><span class="header-section-number">8</span> Navigate the Project</h2>
 <ul>
-<li><p>Build models to predict:</p>
-<ul>
-<li><p>Restaurant success (e.g., high vs low rating/popularity)</p></li>
-<li><p>Delivery time based on operational factors</p></li>
-</ul></li>
-<li><p>Apply techniques such as regression and classification</p></li>
-</ul>
-</section>
-<section id="pattern-discovery" class="level3" data-number="3.0.5">
-<h3 data-number="3.0.5" class="anchored" data-anchor-id="pattern-discovery"><span class="header-section-number">3.0.5</span> <strong>Pattern Discovery</strong></h3>
-<ul>
-<li><p>Use clustering to group restaurants based on performance and characteristics</p></li>
-<li><p>Identify hidden patterns linking cuisine, pricing, and customer ratings</p></li>
-</ul>
-</section>
-<section id="insight-generation" class="level3" data-number="3.0.6">
-<h3 data-number="3.0.6" class="anchored" data-anchor-id="insight-generation"><span class="header-section-number">3.0.6</span> <strong>Insight Generation</strong></h3>
-<ul>
-<li><p>Provide actionable recommendations for:</p>
-<ul>
-<li><p>Restaurant owners (pricing, cuisine strategy, service improvement)</p></li>
-<li><p>Delivery platforms (optimization of logistics and recommendations)</p></li>
-</ul></li>
+<li><a href="./01_preprocessing.html">Phase 1 — Preprocessing and Feature Engineering</a></li>
+<li><a href="./02_eda.html">Phase 2 — Exploratory Data Analysis</a></li>
+<li><a href="./03_modelling.html">Phase 3 — Predictive Modelling</a></li>
 </ul>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
