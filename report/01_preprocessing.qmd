@@ -1,0 +1,3 @@
+## Next step
+
+Continue to the [EDA phase](02_eda.qmd).

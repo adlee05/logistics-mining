@@ -1,0 +1,4 @@
+## Navigation
+
+- Back to [EDA](02_eda.qmd)
+- Return to [Home](index.qmd)

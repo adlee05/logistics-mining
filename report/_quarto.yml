@@ -15,8 +15,8 @@ website:
       - href: 03_modelling.qmd
         text: Modelling
   page-footer:
-    left: "Charan Malampati - IIIT Kottayam"
-    right: "Built with Quarto"
+    left: "Team CARS"
+    right: "Logistics Data Analysis"
 
 format:
   html:
