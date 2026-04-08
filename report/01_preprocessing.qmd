@@ -1,7 +1,7 @@
 ---
 title: "Making the Data Ready for Business"
 subtitle: "Phase 1 — Preprocessing and Feature Engineering"
-author: "Charan Malampati | IIIT Kottayam | DWDM Course Project"
+author: "Charan Malampati, Arjun, Rahul, Sushant | IIIT Kottayam | DWDM Course Project"
 date: "`r Sys.Date()`"
 format:
   html:
@@ -9,7 +9,6 @@ format:
     theme:
       light: journal
       dark: darkly
-    toggle: true
     toc: true
     toc-depth: 3
     toc-expand: true
@@ -45,13 +44,15 @@ Any business insight is only as good as the data behind it.
 
 Before we can ask *why deliveries are late* or *how long an order will take*, we need to be certain the dataset is accurate, consistent, and structured in a way that reflects real-world operations. Raw data almost never is.
 
-This phase documents every transformation applied to the raw food delivery dataset — from messy, inconsistent records to a clean, model-ready table the business can rely on.
+This phase documents every transformation applied to the raw Zomato food delivery dataset — from messy, inconsistent records to a clean, model-ready table the business can rely on.
 
 ---
 
 ## What We Started With
 
-The raw dataset arrived with common real-world problems: inconsistent column naming, mixed data types, missing values scattered across multiple columns, duplicate rows, and raw coordinates instead of usable distances.
+The raw dataset — `Zomato_Dataset.csv` — captures the full lifecycle of a delivery order: who placed it, which restaurant handled it, what conditions the rider faced, and how long it actually took.
+
+It arrived with common real-world problems: inconsistent column naming, columns stored as the wrong type, missing values, duplicate rows, and raw GPS coordinates instead of usable distances.
 
 ```{r raw-shape}
 tibble(
@@ -64,19 +65,20 @@ tibble(
 glimpse(df)
 ```
 
-Before any analysis could begin, these issues needed to be resolved. Each decision below was made with one goal in mind: produce a dataset the business can trust.
+Before any analysis could begin, these issues needed to be resolved. Each decision below was made with one goal: produce a dataset the business can trust.
 
 ---
 
 ## Step 1 — Standardise Column Names
 
-Raw datasets often arrive with inconsistent capitalisation, spaces in column names, and mixed naming conventions. These cause silent errors in code and make collaboration harder.
+Raw data arrived with mixed capitalisation, spaces in names, and inconsistent conventions. These cause silent bugs in code and make collaboration harder.
 
 All column names were converted to clean `snake_case` using `janitor::clean_names()`.
 
 ```{r col-names}
 colnames(df) |>
-  tibble(Column = _) |>
+  as_tibble() |>
+  rename(Column = value) |>
   kbl_nice("Cleaned column names — consistent snake_case throughout")
 ```
 
@@ -86,25 +88,29 @@ colnames(df) |>
 
 ## Step 2 — Fix Data Types
 
-Several columns arrived as the wrong type. Age was stored as a string. Ratings had decimal noise. Dates and timestamps were plain text.
-
-Each column was cast to its correct type:
+Several columns arrived as the wrong type. Age was a string. Ratings had decimal noise. Timestamps were plain text. `time_taken_min` was stored as `"(min) 30"` — a mixed string — and needed the number extracted with `str_extract()`.
 
 ```{r type-fixes-table}
 tibble(
-  Column                    = c("delivery_person_age", "delivery_person_ratings",
-                                 "multiple_deliveries", "vehicle_condition",
-                                 "order_date", "time_orderd", "time_order_picked"),
-  `Raw Type`                = c("character", "character", "character",
-                                 "character", "character", "character", "character"),
-  `Corrected Type`          = c("numeric", "numeric", "numeric",
-                                 "numeric", "Date", "hms time", "hms time"),
-  `Why It Matters`          = c(
+  Column = c(
+    "delivery_person_age", "delivery_person_ratings",
+    "multiple_deliveries", "vehicle_condition",
+    "time_taken_min", "order_date",
+    "time_orderd", "time_order_picked"
+  ),
+  `Raw Type` = c(rep("character", 8)),
+  `Corrected Type` = c(
+    "numeric", "numeric", "numeric", "numeric",
+    "numeric (extracted)", "Date",
+    "datetime (parsed)", "datetime (parsed)"
+  ),
+  `Why It Matters` = c(
     "Age must be numeric for binning and regression",
     "Ratings must be numeric for correlation and modelling",
     "Delivery count must be integer for aggregation",
     "Condition score must be numeric for ordering",
-    "Date enables day-of-week, month, weekend extraction",
+    "Target variable — must be a clean number, not a string",
+    "Date enables day-of-week, month, and weekend extraction",
     "Order time enables pickup delay calculation",
     "Pickup time enables pickup delay calculation"
   )
@@ -113,22 +119,15 @@ tibble(
   kable_styling(full_width = TRUE, bootstrap_options = c("striped", "hover"))
 ```
 
-> **Why it matters:** A model given ratings as text will either crash or encode them incorrectly. Correct types are the foundation of correct analysis.
+> **Why it matters:** A model given ratings or age as text will either crash or silently encode them wrong. Correct types are the foundation of correct analysis.
 
 ---
 
 ## Step 3 — Remove Duplicates
 
-Duplicate rows inflate counts, distort averages, and can cause models to overfit to repeated records.
+Duplicate rows inflate order counts, distort averages, and can cause models to overfit to repeated records. Deduplication was applied with `dplyr::distinct()` immediately after type conversion.
 
-```{r dedup}
-# Deduplication was performed with distinct() during preprocessing
-tibble(
-  Stage  = c("Before deduplication", "After deduplication"),
-  Rows   = c(format(nrow(df), big.mark = ","), format(nrow(df), big.mark = ","))
-) |> kbl_nice("Row count before and after deduplication")
-```
-
+> **The case we have here:** Here, the dataset is pretty without any duplicates before hand, and that's a good thing.
 > **Why it matters:** Every row in the final dataset represents one real, unique delivery. No order is counted twice.
 
 ---
@@ -153,97 +152,105 @@ if (nrow(missing_summary) == 0) {
 }
 ```
 
-The strategy applied was:
-
 ```{r missing-strategy-table}
 tibble(
-  `Column Type`          = c("Target variable (time_taken_min)",
-                              "Numeric features",
-                              "Categorical features"),
-  `Strategy`             = c("Rows with missing target were dropped entirely",
-                              "Imputed with column median (robust to outliers)",
-                              "Imputed with column mode (most frequent value)"),
-  `Reasoning`            = c(
-    "A row without a delivery time cannot contribute to training or evaluation",
-    "Median is not pulled by extreme values the way mean is",
-    "Mode preserves the most common real-world category"
+  `Column Type` = c(
+    "Target variable (time_taken_min)",
+    "Numeric features (age, ratings, vehicle condition)",
+    "Categorical features (weather, traffic, city, festival)"
+  ),
+  `Strategy` = c(
+    "Rows with missing target dropped entirely",
+    "Imputed with column median",
+    "Imputed with column mode (most frequent value)"
+  ),
+  `Reasoning` = c(
+    "A row without a delivery time cannot be used for training or evaluation",
+    "Median is robust to skew — not pulled by extreme outliers the way mean is",
+    "Mode preserves the most common real-world category for each variable"
   )
 ) |>
-  kbl(caption = "Missing value strategy — one rule per column type") |>
+  kbl(caption = "Missing value strategy — one clear rule per column type") |>
   kable_styling(full_width = TRUE, bootstrap_options = c("striped", "hover"))
 ```
 
-> **Why it matters:** Imputing with median and mode keeps the dataset representative. Dropping the target is the only honest choice — guessing a delivery time we do not know would corrupt the model's training signal.
+> **Why it matters:** Imputing with median and mode keeps the dataset representative of real operations. Dropping rows with unknown delivery times is the only honest choice — guessing them would corrupt the model's training signal.
 
 ---
 
 ## Step 5 — Remove Outliers
 
-Outliers in the target variable and key numeric features were identified using the IQR method (1.5 × IQR fence) and capped or removed.
+Outliers in the target variable and key numeric features were identified and removed using the **IQR method** (1.5 × interquartile range fence).
 
-```{r outlier-summary}
+```{r outlier-table}
 tibble(
   Column = c("time_taken_min", "delivery_person_age", "delivery_person_ratings"),
-  `Outlier Rule` = c(
-    "Values beyond 1.5 × IQR from Q1/Q3 removed",
-    "Values beyond 1.5 × IQR from Q1/Q3 removed",
-    "Values beyond 1.5 × IQR from Q1/Q3 removed"
-  ),
+  `Outlier Rule` = rep("Remove values outside Q1 − 1.5×IQR and Q3 + 1.5×IQR", 3),
   `Why` = c(
-    "Delivery times of 90+ min are likely data entry errors or exceptional edge cases",
-    "Age values outside plausible range suggest logging errors",
-    "Rating extremes outside the valid scale are unreliable"
+    "Delivery times of 90+ min are likely logging errors or extreme edge cases",
+    "Age values outside the plausible 15–45 range suggest data entry problems",
+    "Rating extremes outside the valid scale are unreliable and noisy"
   )
 ) |>
-  kbl(caption = "Outlier treatment applied") |>
+  kbl(caption = "Outlier treatment applied using IQR fences") |>
   kable_styling(full_width = TRUE, bootstrap_options = c("striped", "hover"))
 ```
 
-> **Why it matters:** A model trained on genuine outliers will skew its predictions. Removing them makes the model more useful for the typical order the business actually handles.
+> **Why it matters:** A model trained on extreme outliers skews its predictions toward exceptional cases. Removing them makes the model useful for the typical order the business actually handles every day.
 
 ---
 
 ## Step 6 — Engineer Features That Reflect Operations
 
-The most important step. Raw coordinates and timestamps are not useful to a model. We transform them into features that reflect real business decisions.
+The most important step. Raw GPS coordinates and timestamps are not useful to a predictive model. We transform them into features that reflect actual operational decisions.
 
 ### Distance from Coordinates
 
-Raw latitude and longitude for both the restaurant and the delivery destination were converted into a single **Haversine distance in kilometres** — the geodesic (straight-line) distance between the two points.
+Four raw coordinate columns (`restaurant_latitude`, `restaurant_longitude`, `delivery_location_latitude`, `delivery_location_longitude`) were compressed into a single **Haversine distance in kilometres** — the geodesic distance between the restaurant and the delivery address.
 
-```{r distance-dist, fig.cap="Engineered distance variable — spread of delivery distances across all orders"}
-ggplot(df, aes(x = distance_km)) +
-  geom_histogram(bins = 30, fill = "#01696f", color = "white", alpha = 0.85) +
-  coord_cartesian(xlim = c(0, 25)) +
-  labs(title = "Distribution of Delivery Distance",
-       subtitle = "Engineered from raw lat/long coordinates",
-       x = "Distance (km)", y = "Count") +
+```{r distance-dist, fig.cap="Distribution of Haversine delivery distances — engineered from raw GPS coordinates"}
+df |>
+  filter(!is.na(distance_km), distance_km > 0) |>
+  mutate(dist_rounded = round(distance_km)) |>
+  count(dist_rounded) |>
+  filter(dist_rounded <= 25) |>
+  ggplot(aes(x = dist_rounded, y = n)) +
+  geom_col(fill = "#01696f", alpha = 0.85) +
+  labs(
+    title = "Delivery Distance — Orders per km",
+    subtitle = "Each bar = one kilometre band",
+    x = "Distance (km)", y = "Number of Orders"
+  ) +
   theme_minimal(base_size = 13)
 ```
 
-> Four raw coordinate columns became one operationally meaningful number. This is what goes into the model, not the raw lat/long values.
+> Four coordinate columns became one operationally meaningful number. The model uses distance, not raw GPS values.
 
 ### Pickup Delay
 
-The time between order placement and rider pickup was calculated directly from the two timestamp columns.
+The time between `time_orderd` and `time_order_picked` was calculated directly from the two parsed timestamp columns. Negative values (midnight-crossing orders) were adjusted by adding 1440 minutes.
 
-```{r pickup-dist, fig.cap="Pickup delay distribution — how long before the rider picks up the order"}
+```{r pickup-dist, fig.cap="Distribution of pickup delay — the hidden bottleneck between order and dispatch"}
 df |>
   filter(!is.na(pickup_delay_min), pickup_delay_min >= 0) |>
-  ggplot(aes(x = pickup_delay_min)) +
-  geom_histogram(bins = 30, fill = "#a12c7b", color = "white", alpha = 0.85) +
-  coord_cartesian(xlim = c(0, 45)) +
-  labs(title = "Distribution of Pickup Delay",
-       subtitle = "Engineered from order time and pickup time",
-       x = "Pickup Delay (min)", y = "Count") +
+  mutate(pickup_delay_min = round(pickup_delay_min)) |>
+  count(pickup_delay_min) |>
+  filter(pickup_delay_min <= 30) |>
+  ggplot(aes(x = pickup_delay_min, y = n)) +
+  geom_col(fill = "#a12c7b", alpha = 0.85) +
+  labs(
+    title = "Pickup Delay — Orders per Minute",
+    subtitle = "Each bar = one minute",
+    x = "Pickup Delay (min)", y = "Number of Orders"
+  ) +
   theme_minimal(base_size = 13)
 ```
 
-> This feature turned out to be one of the strongest predictors in the modelling phase. It would not exist if we had left the timestamps in raw form.
+> This feature turned out to be one of the strongest predictors in the modelling phase. It would not exist if timestamps were left in raw form.
 
 ### Time-Based Features
 
-Order timestamps were decomposed into components that capture operational patterns:
+The order timestamp and date were decomposed into five operational signals:
 
 ```{r temporal-features}
 tibble(
@@ -251,79 +258,83 @@ tibble(
     "order_hour", "order_day_of_week", "order_month",
     "is_weekend", "is_rush_hour"
   ),
-  `Derived From`       = c(
-    "Order timestamp", "Order date", "Order date",
-    "Order date (Sat/Sun = 1)", "Order hour (7–9am, 12–2pm, 6–9pm = 1)"
+  `Derived From` = c(
+    "time_orderd (hour component)",
+    "order_date (weekday)",
+    "order_date (month)",
+    "order_date — 1 if Saturday or Sunday",
+    "order_hour — 1 if 7–9am, 12–2pm, or 6–9pm"
   ),
-  `Business Meaning`   = c(
-    "Which hour had the highest order volume and slowest delivery?",
-    "Are Monday orders faster than Friday orders?",
-    "Do seasonal patterns exist?",
-    "Is weekend fleet staffing different from weekday?",
-    "Are peak demand windows being served well?"
+  `Business Meaning` = c(
+    "Which hour has the slowest average delivery?",
+    "Are weekday and weekend operations different?",
+    "Do seasonal patterns affect delivery performance?",
+    "Does weekend staffing differ from weekday?",
+    "Are peak demand windows adequately covered?"
   )
 ) |>
-  kbl(caption = "Temporal features engineered from timestamps") |>
+  kbl(caption = "Five temporal features extracted from timestamps and order date") |>
   kable_styling(full_width = TRUE, bootstrap_options = c("striped", "hover"))
 ```
 
 ### Rider Age Bins
 
-Continuous age was grouped into bands for easier pattern detection:
+Continuous age was grouped into six bands using `cut()` to make age-based patterns easier to detect in EDA and modelling:
 
 ```{r age-bins}
 df |>
   filter(!is.na(age_group)) |>
   count(`Age Group` = age_group) |>
   mutate(`% of Riders` = paste0(round(100 * n / sum(n), 1), "%")) |>
-  kbl_nice("Rider age distribution after binning")
+  kbl_nice("Rider age distribution across the workforce")
 ```
 
 ### Traffic Ordinal Encoding
 
-Traffic density was encoded as an ordered integer because it has a natural progression:
+Traffic density was encoded as an ordered integer (1–4) because it has a natural, meaningful progression:
 
 ```{r traffic-encoding}
 tibble(
   `Traffic Label` = c("Low", "Medium", "High", "Jam"),
   `Encoded Value` = c(1L, 2L, 3L, 4L),
-  `Reasoning`     = c(
-    "Least congested — baseline",
-    "Moderate congestion",
-    "Significant congestion",
+  `Reasoning` = c(
+    "Least congested — baseline condition",
+    "Moderate — some slowdown expected",
+    "Significant congestion — noticeable delay",
     "Worst condition — maximum delay"
   )
 ) |>
-  kbl_nice("Ordinal encoding for traffic density")
+  kbl_nice("Ordinal encoding preserves the natural order of traffic severity")
 ```
 
-> **Why ordinal, not one-hot?** Because the order matters. Jam is strictly worse than High, which is strictly worse than Medium. Ordinal encoding preserves that relationship in a single column instead of four.
+> **Why ordinal, not one-hot?** Because the order matters. Jam is strictly worse than High. Ordinal encoding captures that in a single column instead of creating four redundant binary columns.
 
 ---
 
 ## What the Clean Dataset Looks Like
 
-After all preprocessing and feature engineering, here is a summary of the key variables in the final dataset:
+After all preprocessing and feature engineering, the final dataset contains these key variables:
 
 ```{r final-variable-table}
 tribble(
-  ~Variable,                  ~Type,        ~Description,
-  "time_taken_min",           "Numeric",    "Target: actual delivery time in minutes",
-  "distance_km",              "Numeric",    "Engineered Haversine distance (km)",
-  "pickup_delay_min",         "Numeric",    "Time gap between order and rider pickup",
-  "order_hour",               "Integer",    "Hour of day the order was placed",
-  "order_day_of_week",        "Integer",    "Day of week (1 = Mon, 7 = Sun)",
-  "order_month",              "Integer",    "Month of the order",
-  "is_weekend",               "Binary",     "1 if Saturday or Sunday",
-  "is_rush_hour",             "Binary",     "1 if order placed in peak window",
-  "age_bin",                  "Factor",     "Rider age grouped into bands",
-  "road_traffic_density_ord", "Integer",    "Traffic level: 1=Low to 4=Jam",
-  "weather_conditions",       "Factor",     "Sunny, Cloudy, Fog, etc.",
-  "type_of_vehicle",          "Factor",     "Motorcycle, Scooter, Bicycle, etc.",
-  "city",                     "Factor",     "Metro, Urban, Semi-Urban",
-  "festival",                 "Factor",     "Whether the day is a festival day"
+  ~Variable,                  ~Type,      ~Description,
+  "time_taken_min",           "Numeric",  "Target: actual delivery time in minutes",
+  "distance_km",              "Numeric",  "Engineered Haversine distance between restaurant and delivery address",
+  "pickup_delay_min",         "Numeric",  "Time gap between order placement and rider pickup",
+  "order_hour",               "Integer",  "Hour of day the order was placed (0–23)",
+  "order_day_of_week",        "Factor",   "Day of week — Mon to Sun",
+  "order_month",              "Factor",   "Month of order",
+  "is_weekend",               "Binary",   "1 if Saturday or Sunday, 0 otherwise",
+  "is_rush_hour",             "Binary",   "1 if order placed in peak window, 0 otherwise",
+  "age_group",                "Factor",   "Rider age grouped: 15–20, 21–25, 26–30, 31–35, 36–40, 40+",
+  "road_traffic_density_ord", "Integer",  "Traffic level: 1 = Low, 2 = Medium, 3 = High, 4 = Jam",
+  "weather_conditions",       "Factor",   "Sunny, Cloudy, Fog, Stormy, Sandstorms, Windy",
+  "type_of_order",            "Factor",   "Snack, Meal, Drinks, Buffet",
+  "type_of_vehicle",          "Factor",   "Motorcycle, Scooter, Electric Scooter, Bicycle",
+  "city",                     "Factor",   "Metropolitian, Urban, Semi-Urban",
+  "festival",                 "Factor",   "Yes if order was placed on a festival day"
 ) |>
-  kbl(caption = "Final variables in the cleaned dataset") |>
+  kbl(caption = "Final variables in the cleaned dataset — ready for EDA and modelling") |>
   kable_styling(full_width = TRUE, bootstrap_options = c("striped", "hover"))
 ```
 
@@ -333,9 +344,11 @@ tribble(
 
 ```{r summary-stats}
 df |>
-  select(time_taken_min, distance_km, pickup_delay_min,
-         delivery_person_age, delivery_person_ratings,
-         multiple_deliveries, vehicle_condition) |>
+  select(
+    time_taken_min, distance_km, pickup_delay_min,
+    delivery_person_age, delivery_person_ratings,
+    multiple_deliveries, vehicle_condition
+  ) |>
   summary()
 ```
 
@@ -343,24 +356,24 @@ df |>
 
 ## What This Phase Made Possible
 
-Every decision in preprocessing was made in service of the analysis that follows.
-
 ```{r decisions-table}
 tibble(
-  `Decision Made`             = c(
+  `Decision Made` = c(
+    "Extracted numeric value from time_taken_min string",
     "Dropped rows with missing target",
-    "Engineered distance from coordinates",
-    "Engineered pickup delay from timestamps",
-    "Extracted rush hour flag",
+    "Engineered Haversine distance from 4 coordinate columns",
+    "Engineered pickup delay from 2 timestamp columns",
+    "Extracted rush hour and weekend flags",
     "Ordinal-encoded traffic density",
     "Removed outliers with IQR method"
   ),
-  `What It Enables`           = c(
+  `What It Enables` = c(
+    "Target variable is a usable number, not a mixed string",
     "Reliable model training with no label noise",
-    "A single meaningful distance feature instead of 4 raw columns",
-    "Exposing the most actionable delay factor in the dataset",
-    "Capturing time-of-day operational pressure as a binary signal",
-    "Preserving the natural order of traffic conditions for regression",
+    "One meaningful spatial feature instead of 4 raw GPS columns",
+    "The most actionable delay factor exposed as a model input",
+    "Time-of-day and day-type operational patterns captured as binary signals",
+    "Natural order of traffic conditions preserved for regression",
     "Predictions that apply to typical orders, not edge cases"
   )
 ) |>
@@ -376,4 +389,4 @@ The data is now trusted, structured, and ready. The investigation begins.
 
 ## Navigation
 
-- [↑ Return to Home](./index.qmd)
+- [↑ Return to Home](./index.html)

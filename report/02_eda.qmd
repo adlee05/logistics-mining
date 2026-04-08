@@ -96,7 +96,7 @@ The distribution is roughly bell-shaped with a slight right skew. The right tail
 ggplot(df |> filter(!is.na(distance_km)), aes(x = distance_km, y = time_taken_min)) +
   geom_point(alpha = 0.12, color = "#01696f", size = 0.9) +
   geom_smooth(method = "lm", se = TRUE, color = "#a12c7b", linewidth = 1.2) +
-  coord_cartesian(ylim = c(5, 65)) +
+  coord_cartesian(ylim = c(5, 65), xlim = c(0, 25)) +
   labs(title = "Distance vs Delivery Time", subtitle = "Does farther always mean slower?",
        x = "Distance (km)", y = "Delivery Time (min)") +
   theme_minimal(base_size = 13)
@@ -164,13 +164,14 @@ df |>
 
 ```{r pickup-dist, fig.cap="Most pickup delays are under 20 minutes — but outliers extend further"}
 df |>
-  filter(!is.na(pickup_delay_min), pickup_delay_min >= 0) |>
+  filter(!is.na(pickup_delay_min), pickup_delay_min >= 0, pickup_delay_min <= 30) |>
   ggplot(aes(x = pickup_delay_min)) +
-  geom_histogram(bins = 35, fill = "#da7101", color = "white", alpha = 0.85) +
-  coord_cartesian(xlim = c(0, 50)) +
-  labs(title = "Distribution of Pickup Delay",
-       subtitle = "Time between order placement and rider pickup",
-       x = "Pickup Delay (min)", y = "Count") +
+  geom_histogram(binwidth = 1, fill = "#a12c7b", color = "white", alpha = 0.85) +
+  labs(
+    title    = "Distribution of Pickup Delay",
+    subtitle = "Most orders picked up within 10–15 minutes",
+    x = "Pickup Delay (min)", y = "Count"
+  ) +
   theme_minimal(base_size = 13)
 ```
 

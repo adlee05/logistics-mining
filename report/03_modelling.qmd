@@ -314,10 +314,6 @@ knitr::include_graphics("../output/plots/17_lm_residual_plot.png")
 knitr::include_graphics("../output/plots/16_dt_actual_vs_predicted.png")
 ```
 
-```{r dt-residual, echo=FALSE, out.width='85%'}
-knitr::include_graphics("../output/plots/18_dt_residual_plot.png")
-```
-
 **Interpretation:** The closer the points are to the diagonal line, the better the prediction. Residual plots help us see whether the model systematically overpredicts or underpredicts.
 
 ---
