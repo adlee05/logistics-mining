@@ -1,1 +1,0 @@
-swiggy <- read.csv('./datasets/swiggy.csv')

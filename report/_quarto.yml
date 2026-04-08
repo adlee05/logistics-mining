@@ -1,0 +1,26 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "DWDM Project - Food Delivery Time Prediction"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: 01_preprocessing.qmd
+        text: Preprocessing
+      - href: 02_eda.qmd
+        text: EDA
+      - href: 03_modelling.qmd
+        text: Modelling
+  page-footer:
+    left: "Charan Malampati - IIIT Kottayam"
+    right: "Built with Quarto"
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    code-fold: true
+    embed-resources: true
