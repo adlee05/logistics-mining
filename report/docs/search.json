@@ -1,0 +1,394 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "What Makes Restaurants Click? A Data Mining Study Using Online Delivery Data",
+    "section": "",
+    "text": "1 Introduction\nThe emergence of online food delivery platforms such as Zomato and Swiggy has transformed the restaurant industry, making data crucial for understanding customer preferences and operational efficiency. These platforms generate rich data capturing both restaurant characteristics and delivery dynamics.\nThis study uses two complementary datasets: one focusing on restaurant attributes such as ratings, cost, cuisine, and menu details, and the other on delivery-related factors including personnel details, location coordinates, timestamps, weather, traffic, and delivery time.\nBy integrating these datasets, the study applies data mining techniques such as exploratory analysis, clustering, regression, and classification to identify patterns that differentiate successful restaurants from underperforming ones.\nThe objective is to derive data-driven insights into the key factors that determine whether a restaurant “clicks” or “flops” in a competitive online ecosystem.\n\n\n\n2 Problem Statement\nDespite the availability of extensive data from food delivery platforms, many restaurants struggle to understand the key factors that influence their success. High ratings do not always translate into higher order volumes, and efficient delivery does not always guarantee customer satisfaction.\nThe core problem addressed in this study is:\n\nTo identify and model the critical factors that determine restaurant success or failure by analyzing both restaurant characteristics and delivery performance using data mining techniques.\n\nThis includes understanding:\n\nWhich restaurant features (e.g., cost, cuisine, ratings) most strongly influence customer preference\nHow delivery-related factors (e.g., time taken, traffic, weather) impact overall satisfaction\n\n\n\n\n3 Objectives\nThe main objectives of this study are:\n\n3.0.1 Data Understanding and Preprocessing\n\nClean and preprocess both datasets (handle missing values, inconsistent timestamps, categorical encoding)\nIntegrate restaurant and delivery datasets where applicable\n\n\n\n3.0.2 Exploratory Data Analysis (EDA)\n\nAnalyze distributions of ratings, cost, cuisine types, and delivery times\nIdentify trends across cities and customer behavior patterns\nExamine relationships between variables such as rating vs cost, delivery time vs traffic\n\n\n\n3.0.3 Feature Analysis\n\nDetermine the most influential features affecting restaurant success\nEvaluate the impact of delivery conditions (weather, traffic, vehicle condition) on time taken\n\n\n\n3.0.4 Predictive Modeling\n\nBuild models to predict:\n\nRestaurant success (e.g., high vs low rating/popularity)\nDelivery time based on operational factors\n\nApply techniques such as regression and classification\n\n\n\n3.0.5 Pattern Discovery\n\nUse clustering to group restaurants based on performance and characteristics\nIdentify hidden patterns linking cuisine, pricing, and customer ratings\n\n\n\n3.0.6 Insight Generation\n\nProvide actionable recommendations for:\n\nRestaurant owners (pricing, cuisine strategy, service improvement)\nDelivery platforms (optimization of logistics and recommendations)"
+  },
+  {
+    "objectID": "03_modelling.html",
+    "href": "03_modelling.html",
+    "title": "Phase 3 - Model Building and Evaluation",
+    "section": "",
+    "text": "This phase builds regression models to predict delivery time and compares their performance. To keep the workflow stable and fast for this project, the final comparison uses Linear Regression and Decision Tree Regression."
+  },
+  {
+    "objectID": "03_modelling.html#navigation",
+    "href": "03_modelling.html#navigation",
+    "title": "Phase 3 - Model Building and Evaluation",
+    "section": "12 Navigation",
+    "text": "12 Navigation\n\nBack to EDA\nReturn to Home"
+  },
+  {
+    "objectID": "01_preprocessing.html",
+    "href": "01_preprocessing.html",
+    "title": "Phase 1 - Preprocessing and Feature Engineering",
+    "section": "",
+    "text": "This phase converts the raw food delivery dataset into a clean, model-ready dataset by fixing data types, handling missing values, removing duplicates and outliers, and creating engineered features."
+  },
+  {
+    "objectID": "01_preprocessing.html#next-step",
+    "href": "01_preprocessing.html#next-step",
+    "title": "DWDM Project - Food Delivery Time Prediction",
+    "section": "",
+    "text": "Continue to the EDA phase."
+  },
+  {
+    "objectID": "02_eda.html",
+    "href": "02_eda.html",
+    "title": "Phase 2 - Exploratory Data Analysis",
+    "section": "",
+    "text": "This phase explores how delivery time changes with distance, traffic, weather, city type, vehicle type, and pickup delay."
+  },
+  {
+    "objectID": "02_eda.html#navigation",
+    "href": "02_eda.html#navigation",
+    "title": "Phase 2 - Exploratory Data Analysis",
+    "section": "18 Navigation",
+    "text": "18 Navigation\n\nBack to Preprocessing\nContinue to Modelling"
+  },
+  {
+    "objectID": "01_preprocessing.html#objective",
+    "href": "01_preprocessing.html#objective",
+    "title": "Phase 1 - Preprocessing and Feature Engineering",
+    "section": "",
+    "text": "This phase converts the raw food delivery dataset into a clean, model-ready dataset by fixing data types, handling missing values, removing duplicates and outliers, and creating engineered features."
+  },
+  {
+    "objectID": "01_preprocessing.html#libraries",
+    "href": "01_preprocessing.html#libraries",
+    "title": "Phase 1 - Preprocessing and Feature Engineering",
+    "section": "2 Libraries",
+    "text": "2 Libraries\n\n\nCode\nlibrary(tidyverse)\n\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.2.1     ✔ readr     2.2.0\n✔ forcats   1.0.1     ✔ stringr   1.6.0\n✔ ggplot2   4.0.2     ✔ tibble    3.3.1\n✔ lubridate 1.9.5     ✔ tidyr     1.3.2\n✔ purrr     1.2.1     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\n\nCode\nlibrary(janitor)\n\n\n\nAttaching package: 'janitor'\n\nThe following objects are masked from 'package:stats':\n\n    chisq.test, fisher.test\n\n\nCode\nlibrary(skimr)\nlibrary(knitr)\nlibrary(kableExtra)\n\n\n\nAttaching package: 'kableExtra'\n\nThe following object is masked from 'package:dplyr':\n\n    group_rows"
+  },
+  {
+    "objectID": "01_preprocessing.html#load-cleaned-dataset",
+    "href": "01_preprocessing.html#load-cleaned-dataset",
+    "title": "Phase 1 - Preprocessing and Feature Engineering",
+    "section": "3 Load cleaned dataset",
+    "text": "3 Load cleaned dataset\n\n\nCode\ndf &lt;- read_csv(\"../output/food_delivery_clean.csv\", show_col_types = FALSE)\ndim(df)\n\n\n[1] 40036    29"
+  },
+  {
+    "objectID": "01_preprocessing.html#dataset-overview",
+    "href": "01_preprocessing.html#dataset-overview",
+    "title": "Phase 1 - Preprocessing and Feature Engineering",
+    "section": "4 Dataset overview",
+    "text": "4 Dataset overview\n\n\nCode\nglimpse(df)\n\n\nRows: 40,036\nColumns: 29\n$ id                          &lt;chr&gt; \"0xd987\", \"0x2784\", \"0xc8b6\", \"0xdb64\", \"0…\n$ delivery_person_id          &lt;chr&gt; \"KOCRES16DEL01\", \"PUNERES13DEL03\", \"LUDHRE…\n$ delivery_person_age         &lt;dbl&gt; 21, 23, 34, 24, 29, 34, 21, 31, 37, 33, 29…\n$ delivery_person_ratings     &lt;dbl&gt; 4.7, 4.7, 4.3, 4.7, 4.5, 4.9, 4.7, 4.7, 5.…\n$ restaurant_latitude         &lt;dbl&gt; 10.00306, 18.56245, 30.89958, 26.46350, 19…\n$ restaurant_longitude        &lt;dbl&gt; 76.30759, 73.91662, 75.80935, 80.37293, 72…\n$ delivery_location_latitude  &lt;dbl&gt; 10.04306, 18.65245, 30.91958, 26.59350, 19…\n$ delivery_location_longitude &lt;dbl&gt; 76.34759, 74.00662, 75.82935, 80.50293, 72…\n$ order_date                  &lt;date&gt; 2022-02-13, 2022-03-04, 2022-02-13, 2022-…\n$ time_orderd                 &lt;chr&gt; \"0-01-01T14:55:00Z\", \"0-01-01T17:30:00Z\", …\n$ time_order_picked           &lt;chr&gt; \"0-01-01T15:05:00Z\", \"0-01-01T17:40:00Z\", …\n$ weather_conditions          &lt;chr&gt; \"Stormy\", \"Sandstorms\", \"Sandstorms\", \"Fog…\n$ road_traffic_density        &lt;chr&gt; \"High\", \"Medium\", \"Low\", \"Jam\", \"Jam\", \"Ja…\n$ vehicle_condition           &lt;dbl&gt; 1, 1, 0, 1, 2, 0, 0, 2, 1, 2, 2, 0, 1, 2, …\n$ type_of_order               &lt;chr&gt; \"Meal\", \"Drinks\", \"Buffet\", \"Snack\", \"Buff…\n$ type_of_vehicle             &lt;chr&gt; \"motorcycle\", \"scooter\", \"motorcycle\", \"sc…\n$ multiple_deliveries         &lt;dbl&gt; 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, …\n$ festival                    &lt;chr&gt; \"No\", \"No\", \"No\", \"No\", \"No\", \"No\", \"No\", …\n$ city                        &lt;chr&gt; \"Metropolitian\", \"Metropolitian\", \"Metropo…\n$ time_taken_min              &lt;dbl&gt; 23, 21, 20, 41, 20, 41, 15, 26, 20, 39, 15…\n$ distance_km                 &lt;dbl&gt; 6.249312, 13.803306, 2.933540, 19.418347, …\n$ pickup_delay_min            &lt;dbl&gt; 10, 10, 10, 15, 10, 10, 15, 15, 15, 15, 15…\n$ order_hour                  &lt;dbl&gt; 14, 17, 9, 19, 20, 20, 21, 22, 8, 19, 18, …\n$ order_day_of_week           &lt;chr&gt; \"Sun\", \"Fri\", \"Sun\", \"Mon\", \"Sat\", \"Sun\", …\n$ order_month                 &lt;chr&gt; \"Feb\", \"Mar\", \"Feb\", \"Feb\", \"Apr\", \"Mar\", …\n$ is_weekend                  &lt;dbl&gt; 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, …\n$ age_group                   &lt;chr&gt; \"21-25\", \"21-25\", \"31-35\", \"21-25\", \"26-30…\n$ is_rush_hour                &lt;dbl&gt; 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, …\n$ road_traffic_density_ord    &lt;dbl&gt; 3, 2, 1, 4, 4, 4, 4, 1, 1, 4, 2, 4, 1, 1, …"
+  },
+  {
+    "objectID": "01_preprocessing.html#final-variables",
+    "href": "01_preprocessing.html#final-variables",
+    "title": "Phase 1 - Preprocessing and Feature Engineering",
+    "section": "5 Final variables",
+    "text": "5 Final variables\n\n\nCode\ntribble(\n  ~Variable, ~Purpose,\n  \"time_taken_min\", \"Target variable: delivery time in minutes\",\n  \"distance_km\", \"Engineered Haversine distance between restaurant and destination\",\n  \"pickup_delay_min\", \"Time gap between order placement and pickup\",\n  \"order_hour\", \"Hour of order\",\n  \"order_day_of_week\", \"Day of week extracted from order date\",\n  \"order_month\", \"Month extracted from order date\",\n  \"is_weekend\", \"Weekend indicator\",\n  \"age_group\", \"Binned delivery partner age\",\n  \"is_rush_hour\", \"Peak-time indicator\",\n  \"road_traffic_density_ord\", \"Ordinal traffic encoding\"\n) |&gt;\n  kbl(caption = \"Important processed and engineered variables\") |&gt;\n  kable_styling(full_width = FALSE, bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nImportant processed and engineered variables\n\n\nVariable\nPurpose\n\n\n\n\ntime_taken_min\nTarget variable: delivery time in minutes\n\n\ndistance_km\nEngineered Haversine distance between restaurant and destination\n\n\npickup_delay_min\nTime gap between order placement and pickup\n\n\norder_hour\nHour of order\n\n\norder_day_of_week\nDay of week extracted from order date\n\n\norder_month\nMonth extracted from order date\n\n\nis_weekend\nWeekend indicator\n\n\nage_group\nBinned delivery partner age\n\n\nis_rush_hour\nPeak-time indicator\n\n\nroad_traffic_density_ord\nOrdinal traffic encoding"
+  },
+  {
+    "objectID": "01_preprocessing.html#missing-values-after-preprocessing",
+    "href": "01_preprocessing.html#missing-values-after-preprocessing",
+    "title": "Phase 1 - Preprocessing and Feature Engineering",
+    "section": "6 Missing values after preprocessing",
+    "text": "6 Missing values after preprocessing\n\n\nCode\nmissing_summary &lt;- df |&gt;\n  summarise(across(everything(), ~ sum(is.na(.)))) |&gt;\n  pivot_longer(everything(), names_to = \"column\", values_to = \"missing_count\") |&gt;\n  mutate(missing_pct = round(100 * missing_count / nrow(df), 2)) |&gt;\n  arrange(desc(missing_count))\n\nmissing_summary |&gt;\n  filter(missing_count &gt; 0) |&gt;\n  kbl(caption = \"Remaining missing values after preprocessing\") |&gt;\n  kable_styling(full_width = FALSE)\n\n\n\nRemaining missing values after preprocessing\n\n\ncolumn\nmissing_count\nmissing_pct\n\n\n\n\ntime_orderd\n5013\n12.52\n\n\norder_hour\n5013\n12.52\n\n\nis_rush_hour\n5013\n12.52\n\n\ntime_order_picked\n3473\n8.67"
+  },
+  {
+    "objectID": "01_preprocessing.html#summary-statistics",
+    "href": "01_preprocessing.html#summary-statistics",
+    "title": "Phase 1 - Preprocessing and Feature Engineering",
+    "section": "7 Summary statistics",
+    "text": "7 Summary statistics\n\n\nCode\ndf |&gt;\n  select(time_taken_min, distance_km, pickup_delay_min,\n         delivery_person_age, delivery_person_ratings,\n         multiple_deliveries, vehicle_condition) |&gt;\n  summary()\n\n\n time_taken_min   distance_km        pickup_delay_min delivery_person_age\n Min.   :10.00   Min.   :    1.467   Min.   :  5.00   Min.   :20.0       \n 1st Qu.:18.00   1st Qu.:    4.663   1st Qu.:  5.00   1st Qu.:24.0       \n Median :24.00   Median :    9.186   Median : 10.00   Median :29.0       \n Mean   :24.99   Mean   :   95.377   Mean   : 16.04   Mean   :29.3       \n 3rd Qu.:30.00   3rd Qu.:   13.647   3rd Qu.: 15.00   3rd Qu.:34.0       \n Max.   :51.00   Max.   :19710.056   Max.   :740.00   Max.   :39.0       \n delivery_person_ratings multiple_deliveries vehicle_condition\n Min.   :4.300           Min.   :0.0000      Min.   :0.000    \n 1st Qu.:4.600           1st Qu.:0.0000      1st Qu.:0.000    \n Median :4.700           Median :1.0000      Median :1.000    \n Mean   :4.725           Mean   :0.7218      Mean   :1.045    \n 3rd Qu.:4.900           3rd Qu.:1.0000      3rd Qu.:2.000    \n Max.   :5.000           Max.   :3.0000      Max.   :3.000"
+  },
+  {
+    "objectID": "01_preprocessing.html#distribution-of-engineered-features",
+    "href": "01_preprocessing.html#distribution-of-engineered-features",
+    "title": "Phase 1 - Preprocessing and Feature Engineering",
+    "section": "8 Distribution of engineered features",
+    "text": "8 Distribution of engineered features\n\n8.1 Distance\n\n\nCode\nggplot(df, aes(x = distance_km)) +\n  geom_histogram(bins = 30, fill = \"#01696f\", color = \"white\") +\n  labs(title = \"Distribution of Delivery Distance\", x = \"Distance (km)\", y = \"Count\") +\n  theme_minimal(base_size = 13)\n\n\n\n\n\n\n\n\n\n\n\n8.2 Pickup delay\n\n\nCode\nggplot(df, aes(x = pickup_delay_min)) +\n  geom_histogram(bins = 30, fill = \"#a12c7b\", color = \"white\") +\n  labs(title = \"Distribution of Pickup Delay\", x = \"Pickup Delay (min)\", y = \"Count\") +\n  theme_minimal(base_size = 13)"
+  },
+  {
+    "objectID": "01_preprocessing.html#key-preprocessing-notes",
+    "href": "01_preprocessing.html#key-preprocessing-notes",
+    "title": "Phase 1 - Preprocessing and Feature Engineering",
+    "section": "9 Key preprocessing notes",
+    "text": "9 Key preprocessing notes\n\nRaw IDs were retained in the cleaned dataset but excluded later from modelling.\nTraffic was ordinally encoded because it has natural order: Low &lt; Medium &lt; High &lt; Jam.\nTime-based features were created from date and order/pickup timestamps.\nDistance was engineered from latitude and longitude because it is more meaningful than raw coordinates alone."
+  },
+  {
+    "objectID": "01_preprocessing.html#navigation",
+    "href": "01_preprocessing.html#navigation",
+    "title": "Phase 1 - Preprocessing and Feature Engineering",
+    "section": "10 Navigation",
+    "text": "10 Navigation\nContinue to EDA"
+  },
+  {
+    "objectID": "02_eda.html#objective",
+    "href": "02_eda.html#objective",
+    "title": "Phase 2 - Exploratory Data Analysis",
+    "section": "",
+    "text": "This phase explores how delivery time changes with distance, traffic, weather, city type, vehicle type, and pickup delay."
+  },
+  {
+    "objectID": "02_eda.html#libraries",
+    "href": "02_eda.html#libraries",
+    "title": "Phase 2 - Exploratory Data Analysis",
+    "section": "2 Libraries",
+    "text": "2 Libraries\n\n\nCode\nlibrary(tidyverse)\n\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.2.1     ✔ readr     2.2.0\n✔ forcats   1.0.1     ✔ stringr   1.6.0\n✔ ggplot2   4.0.2     ✔ tibble    3.3.1\n✔ lubridate 1.9.5     ✔ tidyr     1.3.2\n✔ purrr     1.2.1     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\n\nCode\nlibrary(knitr)\nlibrary(kableExtra)\n\n\n\nAttaching package: 'kableExtra'\n\nThe following object is masked from 'package:dplyr':\n\n    group_rows"
+  },
+  {
+    "objectID": "02_eda.html#load-cleaned-dataset",
+    "href": "02_eda.html#load-cleaned-dataset",
+    "title": "Phase 2 - Exploratory Data Analysis",
+    "section": "3 Load cleaned dataset",
+    "text": "3 Load cleaned dataset\n\n\nCode\ndf &lt;- read_csv(\"../output/food_delivery_clean.csv\", show_col_types = FALSE)\ndim(df)\n\n\n[1] 40036    29"
+  },
+  {
+    "objectID": "02_eda.html#dataset-snapshot",
+    "href": "02_eda.html#dataset-snapshot",
+    "title": "Phase 2 - Exploratory Data Analysis",
+    "section": "4 Dataset snapshot",
+    "text": "4 Dataset snapshot\n\n\nCode\nglimpse(df)\n\n\nRows: 40,036\nColumns: 29\n$ id                          &lt;chr&gt; \"0xd987\", \"0x2784\", \"0xc8b6\", \"0xdb64\", \"0…\n$ delivery_person_id          &lt;chr&gt; \"KOCRES16DEL01\", \"PUNERES13DEL03\", \"LUDHRE…\n$ delivery_person_age         &lt;dbl&gt; 21, 23, 34, 24, 29, 34, 21, 31, 37, 33, 29…\n$ delivery_person_ratings     &lt;dbl&gt; 4.7, 4.7, 4.3, 4.7, 4.5, 4.9, 4.7, 4.7, 5.…\n$ restaurant_latitude         &lt;dbl&gt; 10.00306, 18.56245, 30.89958, 26.46350, 19…\n$ restaurant_longitude        &lt;dbl&gt; 76.30759, 73.91662, 75.80935, 80.37293, 72…\n$ delivery_location_latitude  &lt;dbl&gt; 10.04306, 18.65245, 30.91958, 26.59350, 19…\n$ delivery_location_longitude &lt;dbl&gt; 76.34759, 74.00662, 75.82935, 80.50293, 72…\n$ order_date                  &lt;date&gt; 2022-02-13, 2022-03-04, 2022-02-13, 2022-…\n$ time_orderd                 &lt;chr&gt; \"0-01-01T14:55:00Z\", \"0-01-01T17:30:00Z\", …\n$ time_order_picked           &lt;chr&gt; \"0-01-01T15:05:00Z\", \"0-01-01T17:40:00Z\", …\n$ weather_conditions          &lt;chr&gt; \"Stormy\", \"Sandstorms\", \"Sandstorms\", \"Fog…\n$ road_traffic_density        &lt;chr&gt; \"High\", \"Medium\", \"Low\", \"Jam\", \"Jam\", \"Ja…\n$ vehicle_condition           &lt;dbl&gt; 1, 1, 0, 1, 2, 0, 0, 2, 1, 2, 2, 0, 1, 2, …\n$ type_of_order               &lt;chr&gt; \"Meal\", \"Drinks\", \"Buffet\", \"Snack\", \"Buff…\n$ type_of_vehicle             &lt;chr&gt; \"motorcycle\", \"scooter\", \"motorcycle\", \"sc…\n$ multiple_deliveries         &lt;dbl&gt; 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, …\n$ festival                    &lt;chr&gt; \"No\", \"No\", \"No\", \"No\", \"No\", \"No\", \"No\", …\n$ city                        &lt;chr&gt; \"Metropolitian\", \"Metropolitian\", \"Metropo…\n$ time_taken_min              &lt;dbl&gt; 23, 21, 20, 41, 20, 41, 15, 26, 20, 39, 15…\n$ distance_km                 &lt;dbl&gt; 6.249312, 13.803306, 2.933540, 19.418347, …\n$ pickup_delay_min            &lt;dbl&gt; 10, 10, 10, 15, 10, 10, 15, 15, 15, 15, 15…\n$ order_hour                  &lt;dbl&gt; 14, 17, 9, 19, 20, 20, 21, 22, 8, 19, 18, …\n$ order_day_of_week           &lt;chr&gt; \"Sun\", \"Fri\", \"Sun\", \"Mon\", \"Sat\", \"Sun\", …\n$ order_month                 &lt;chr&gt; \"Feb\", \"Mar\", \"Feb\", \"Feb\", \"Apr\", \"Mar\", …\n$ is_weekend                  &lt;dbl&gt; 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, …\n$ age_group                   &lt;chr&gt; \"21-25\", \"21-25\", \"31-35\", \"21-25\", \"26-30…\n$ is_rush_hour                &lt;dbl&gt; 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, …\n$ road_traffic_density_ord    &lt;dbl&gt; 3, 2, 1, 4, 4, 4, 4, 1, 1, 4, 2, 4, 1, 1, …"
+  },
+  {
+    "objectID": "02_eda.html#summary-statistics",
+    "href": "02_eda.html#summary-statistics",
+    "title": "Phase 2 - Exploratory Data Analysis",
+    "section": "5 Summary statistics",
+    "text": "5 Summary statistics\n\n\nCode\ndf |&gt;\n  summarise(\n    mean_time = mean(time_taken_min, na.rm = TRUE),\n    median_time = median(time_taken_min, na.rm = TRUE),\n    min_time = min(time_taken_min, na.rm = TRUE),\n    max_time = max(time_taken_min, na.rm = TRUE),\n    sd_time = sd(time_taken_min, na.rm = TRUE),\n    mean_distance = mean(distance_km, na.rm = TRUE),\n    mean_pickup_delay = mean(pickup_delay_min, na.rm = TRUE)\n  ) |&gt;\n  kbl(caption = \"Summary of key numeric variables\") |&gt;\n  kable_styling(full_width = FALSE, bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nSummary of key numeric variables\n\n\nmean_time\nmedian_time\nmin_time\nmax_time\nsd_time\nmean_distance\nmean_pickup_delay\n\n\n\n\n24.98846\n24\n10\n51\n8.83377\n95.37705\n16.04131"
+  },
+  {
+    "objectID": "02_eda.html#missing-values",
+    "href": "02_eda.html#missing-values",
+    "title": "Phase 2 - Exploratory Data Analysis",
+    "section": "6 Missing values",
+    "text": "6 Missing values\n\n\nCode\nmissing_summary &lt;- df |&gt;\n  summarise(across(everything(), ~ sum(is.na(.)))) |&gt;\n  pivot_longer(everything(), names_to = \"column\", values_to = \"missing_count\") |&gt;\n  mutate(missing_pct = round(100 * missing_count / nrow(df), 2)) |&gt;\n  arrange(desc(missing_count))\n\nmissing_summary |&gt;\n  filter(missing_count &gt; 0) |&gt;\n  kbl(caption = \"Missing values after preprocessing\") |&gt;\n  kable_styling(full_width = FALSE, bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nMissing values after preprocessing\n\n\ncolumn\nmissing_count\nmissing_pct\n\n\n\n\ntime_orderd\n5013\n12.52\n\n\norder_hour\n5013\n12.52\n\n\nis_rush_hour\n5013\n12.52\n\n\ntime_order_picked\n3473\n8.67"
+  },
+  {
+    "objectID": "02_eda.html#distribution-of-delivery-time",
+    "href": "02_eda.html#distribution-of-delivery-time",
+    "title": "Phase 2 - Exploratory Data Analysis",
+    "section": "7 Distribution of delivery time",
+    "text": "7 Distribution of delivery time\n\n\nCode\nggplot(df, aes(x = time_taken_min)) +\n  geom_histogram(bins = 30, fill = \"#01696f\", color = \"white\") +\n  geom_density(aes(y = after_stat(count)), color = \"#a12c7b\", linewidth = 1) +\n  labs(\n    title = \"Distribution of Delivery Time\",\n    x = \"Time Taken (min)\",\n    y = \"Count\"\n  ) +\n  theme_minimal(base_size = 13)"
+  },
+  {
+    "objectID": "02_eda.html#correlation-heatmap",
+    "href": "02_eda.html#correlation-heatmap",
+    "title": "Phase 2 - Exploratory Data Analysis",
+    "section": "8 Correlation heatmap",
+    "text": "8 Correlation heatmap\n\n\nCode\nnum_df &lt;- df |&gt;\n  select(where(is.numeric)) |&gt;\n  select(-any_of(\"id\"))\n\ncor_mat &lt;- cor(num_df, use = \"pairwise.complete.obs\")\n\ncor_long &lt;- as.data.frame(cor_mat) |&gt;\n  tibble::rownames_to_column(\"var1\") |&gt;\n  pivot_longer(-var1, names_to = \"var2\", values_to = \"correlation\")\n\nggplot(cor_long, aes(var1, var2, fill = correlation)) +\n  geom_tile() +\n  scale_fill_gradient2(low = \"#b2182b\", mid = \"white\", high = \"#01696f\", midpoint = 0) +\n  coord_fixed() +\n  labs(\n    title = \"Correlation Heatmap of Numeric Variables\",\n    x = NULL,\n    y = NULL,\n    fill = \"Corr\"\n  ) +\n  theme_minimal(base_size = 12) +\n  theme(axis.text.x = element_text(angle = 45, hjust = 1))"
+  },
+  {
+    "objectID": "02_eda.html#distance-versus-time",
+    "href": "02_eda.html#distance-versus-time",
+    "title": "Phase 2 - Exploratory Data Analysis",
+    "section": "9 Distance versus time",
+    "text": "9 Distance versus time\n\n\nCode\nggplot(df, aes(x = distance_km, y = time_taken_min)) +\n  geom_point(alpha = 0.35, color = \"#01696f\") +\n  geom_smooth(method = \"lm\", se = TRUE, color = \"#a12c7b\") +\n  labs(\n    title = \"Delivery Time vs Distance\",\n    x = \"Distance (km)\",\n    y = \"Time Taken (min)\"\n  ) +\n  theme_minimal(base_size = 13)\n\n\n`geom_smooth()` using formula = 'y ~ x'"
+  },
+  {
+    "objectID": "02_eda.html#traffic-effect",
+    "href": "02_eda.html#traffic-effect",
+    "title": "Phase 2 - Exploratory Data Analysis",
+    "section": "10 Traffic effect",
+    "text": "10 Traffic effect\n\n\nCode\nggplot(df, aes(x = road_traffic_density, y = time_taken_min, fill = road_traffic_density)) +\n  geom_boxplot(alpha = 0.8, outlier.alpha = 0.2) +\n  labs(\n    title = \"Delivery Time by Traffic Density\",\n    x = \"Traffic Density\",\n    y = \"Time Taken (min)\"\n  ) +\n  theme_minimal(base_size = 13) +\n  theme(legend.position = \"none\")"
+  },
+  {
+    "objectID": "02_eda.html#weather-effect",
+    "href": "02_eda.html#weather-effect",
+    "title": "Phase 2 - Exploratory Data Analysis",
+    "section": "11 Weather effect",
+    "text": "11 Weather effect\n\n\nCode\nggplot(df, aes(x = weather_conditions, y = time_taken_min, fill = weather_conditions)) +\n  geom_boxplot(alpha = 0.8, outlier.alpha = 0.2) +\n  labs(\n    title = \"Delivery Time by Weather\",\n    x = \"Weather\",\n    y = \"Time Taken (min)\"\n  ) +\n  theme_minimal(base_size = 13) +\n  theme(legend.position = \"none\", axis.text.x = element_text(angle = 20, hjust = 1))"
+  },
+  {
+    "objectID": "02_eda.html#city-and-festival-effect",
+    "href": "02_eda.html#city-and-festival-effect",
+    "title": "Phase 2 - Exploratory Data Analysis",
+    "section": "12 City and festival effect",
+    "text": "12 City and festival effect\n\n\nCode\nggplot(df, aes(x = city, y = time_taken_min, fill = city)) +\n  geom_boxplot(alpha = 0.8, outlier.alpha = 0.2) +\n  labs(\n    title = \"Delivery Time by City\",\n    x = \"City\",\n    y = \"Time Taken (min)\"\n  ) +\n  theme_minimal(base_size = 13) +\n  theme(legend.position = \"none\")\n\n\n\n\n\n\n\n\n\n\n\nCode\nggplot(df, aes(x = festival, y = time_taken_min, fill = festival)) +\n  geom_boxplot(alpha = 0.8, outlier.alpha = 0.2) +\n  labs(\n    title = \"Delivery Time by Festival\",\n    x = \"Festival\",\n    y = \"Time Taken (min)\"\n  ) +\n  theme_minimal(base_size = 13) +\n  theme(legend.position = \"none\")"
+  },
+  {
+    "objectID": "02_eda.html#pickup-delay-effect",
+    "href": "02_eda.html#pickup-delay-effect",
+    "title": "Phase 2 - Exploratory Data Analysis",
+    "section": "13 Pickup delay effect",
+    "text": "13 Pickup delay effect\n\n\nCode\nggplot(df, aes(x = pickup_delay_min, y = time_taken_min)) +\n  geom_point(alpha = 0.35, color = \"#01696f\") +\n  geom_smooth(method = \"lm\", se = TRUE, color = \"#a12c7b\") +\n  labs(\n    title = \"Pickup Delay vs Delivery Time\",\n    x = \"Pickup Delay (min)\",\n    y = \"Time Taken (min)\"\n  ) +\n  theme_minimal(base_size = 13)\n\n\n`geom_smooth()` using formula = 'y ~ x'"
+  },
+  {
+    "objectID": "02_eda.html#age-and-rating-distributions",
+    "href": "02_eda.html#age-and-rating-distributions",
+    "title": "Phase 2 - Exploratory Data Analysis",
+    "section": "14 Age and rating distributions",
+    "text": "14 Age and rating distributions\n\n\nCode\nggplot(df, aes(x = delivery_person_age)) +\n  geom_histogram(bins = 25, fill = \"#01696f\", color = \"white\") +\n  labs(title = \"Distribution of Age\", x = \"Age\", y = \"Count\") +\n  theme_minimal(base_size = 13)\n\n\n\n\n\n\n\n\n\n\n\nCode\nggplot(df, aes(x = delivery_person_ratings)) +\n  geom_histogram(bins = 25, fill = \"#a12c7b\", color = \"white\") +\n  labs(title = \"Distribution of Ratings\", x = \"Ratings\", y = \"Count\") +\n  theme_minimal(base_size = 13)"
+  },
+  {
+    "objectID": "02_eda.html#vehicle-type-effect",
+    "href": "02_eda.html#vehicle-type-effect",
+    "title": "Phase 2 - Exploratory Data Analysis",
+    "section": "15 Vehicle type effect",
+    "text": "15 Vehicle type effect\n\n\nCode\nggplot(df, aes(x = type_of_vehicle, y = time_taken_min, fill = type_of_vehicle)) +\n  geom_boxplot(alpha = 0.8, outlier.alpha = 0.2) +\n  labs(\n    title = \"Delivery Time by Vehicle Type\",\n    x = \"Vehicle Type\",\n    y = \"Time Taken (min)\"\n  ) +\n  theme_minimal(base_size = 13) +\n  theme(legend.position = \"none\")"
+  },
+  {
+    "objectID": "02_eda.html#category-summaries",
+    "href": "02_eda.html#category-summaries",
+    "title": "Phase 2 - Exploratory Data Analysis",
+    "section": "16 Category summaries",
+    "text": "16 Category summaries\n\n\nCode\nweather_summary &lt;- df |&gt;\n  group_by(weather_conditions) |&gt;\n  summarise(\n    count = n(),\n    avg_time = mean(time_taken_min, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  arrange(desc(avg_time))\n\nweather_summary |&gt;\n  kbl(caption = \"Average delivery time by weather condition\") |&gt;\n  kable_styling(full_width = FALSE, bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nAverage delivery time by weather condition\n\n\nweather_conditions\ncount\navg_time\n\n\n\n\nCloudy\n6674\n27.79218\n\n\nFog\n7343\n27.72218\n\n\nWindy\n6393\n24.79931\n\n\nSandstorms\n6425\n24.49961\n\n\nStormy\n6501\n24.47347\n\n\nSunny\n6700\n20.34851\n\n\n\n\n\n\n\nCode\ncity_summary &lt;- df |&gt;\n  group_by(city) |&gt;\n  summarise(\n    count = n(),\n    avg_time = mean(time_taken_min, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  arrange(desc(avg_time))\n\ncity_summary |&gt;\n  kbl(caption = \"Average delivery time by city\") |&gt;\n  kable_styling(full_width = FALSE, bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nAverage delivery time by city\n\n\ncity\ncount\navg_time\n\n\n\n\nSemi-Urban\n81\n48.03704\n\n\nMetropolitian\n30657\n25.83041\n\n\nUrban\n9298\n22.01162"
+  },
+  {
+    "objectID": "02_eda.html#key-observations",
+    "href": "02_eda.html#key-observations",
+    "title": "Phase 2 - Exploratory Data Analysis",
+    "section": "17 Key observations",
+    "text": "17 Key observations\n\nDelivery time generally increases with distance.\nHeavy traffic and jam conditions increase delivery time more than low traffic.\nPickup delay also contributes directly to final delivery time.\nWeather and city category create visible differences in delivery performance."
+  },
+  {
+    "objectID": "03_modelling.html#objective",
+    "href": "03_modelling.html#objective",
+    "title": "Phase 3 - Model Building and Evaluation",
+    "section": "",
+    "text": "This phase builds regression models to predict delivery time and compares their performance. To keep the workflow stable and fast for this project, the final comparison uses Linear Regression and Decision Tree Regression."
+  },
+  {
+    "objectID": "03_modelling.html#libraries",
+    "href": "03_modelling.html#libraries",
+    "title": "Phase 3 - Model Building and Evaluation",
+    "section": "2 Libraries",
+    "text": "2 Libraries\n\n\nCode\nlibrary(tidyverse)\n\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.2.1     ✔ readr     2.2.0\n✔ forcats   1.0.1     ✔ stringr   1.6.0\n✔ ggplot2   4.0.2     ✔ tibble    3.3.1\n✔ lubridate 1.9.5     ✔ tidyr     1.3.2\n✔ purrr     1.2.1     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\n\nCode\nlibrary(knitr)\nlibrary(kableExtra)\n\n\n\nAttaching package: 'kableExtra'\n\nThe following object is masked from 'package:dplyr':\n\n    group_rows"
+  },
+  {
+    "objectID": "03_modelling.html#load-model-comparison-results",
+    "href": "03_modelling.html#load-model-comparison-results",
+    "title": "Phase 3 - Model Building and Evaluation",
+    "section": "3 Load model comparison results",
+    "text": "3 Load model comparison results\n\n\nCode\nresults &lt;- read_csv(\"../output/model_comparison.csv\", show_col_types = FALSE)\nresults\n\n\n# A tibble: 2 × 4\n  Model              RMSE   MAE    R2\n  &lt;chr&gt;             &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;\n1 Linear Regression  6.27  5.00 0.498\n2 Decision Tree      6.23  4.89 0.505"
+  },
+  {
+    "objectID": "03_modelling.html#model-performance-table",
+    "href": "03_modelling.html#model-performance-table",
+    "title": "Phase 3 - Model Building and Evaluation",
+    "section": "4 Model performance table",
+    "text": "4 Model performance table\n\n\nCode\nresults |&gt;\n  arrange(RMSE) |&gt;\n  kbl(caption = \"Model performance comparison\") |&gt;\n  kable_styling(full_width = FALSE, bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nModel performance comparison\n\n\nModel\nRMSE\nMAE\nR2\n\n\n\n\nDecision Tree\n6.226\n4.895\n0.505\n\n\nLinear Regression\n6.274\n5.003\n0.498"
+  },
+  {
+    "objectID": "03_modelling.html#rmse-comparison-plot",
+    "href": "03_modelling.html#rmse-comparison-plot",
+    "title": "Phase 3 - Model Building and Evaluation",
+    "section": "5 RMSE comparison plot",
+    "text": "5 RMSE comparison plot\n\n\nCode\nknitr::include_graphics(\"../output/plots/19_model_rmse_comparison.png\")"
+  },
+  {
+    "objectID": "03_modelling.html#linear-regression-diagnostics",
+    "href": "03_modelling.html#linear-regression-diagnostics",
+    "title": "Phase 3 - Model Building and Evaluation",
+    "section": "6 Linear Regression diagnostics",
+    "text": "6 Linear Regression diagnostics\n\n6.1 Actual vs Predicted\n\n\nCode\nknitr::include_graphics(\"../output/plots/15_lm_actual_vs_predicted.png\")\n\n\n\n\n\n\n\n\n\n\n\n6.2 Residual plot\n\n\nCode\nknitr::include_graphics(\"../output/plots/17_lm_residual_plot.png\")"
+  },
+  {
+    "objectID": "03_modelling.html#decision-tree-diagnostics",
+    "href": "03_modelling.html#decision-tree-diagnostics",
+    "title": "Phase 3 - Model Building and Evaluation",
+    "section": "7 Decision Tree diagnostics",
+    "text": "7 Decision Tree diagnostics\n\n7.1 Actual vs Predicted\n\n\nCode\nknitr::include_graphics(\"../output/plots/16_dt_actual_vs_predicted.png\")\n\n\n\n\n\n\n\n\n\n\n\n7.2 Residual plot\n\n\nCode\nknitr::include_graphics(\"../output/plots/18_dt_residual_plot.png\")"
+  },
+  {
+    "objectID": "03_modelling.html#linear-model-coefficients",
+    "href": "03_modelling.html#linear-model-coefficients",
+    "title": "Phase 3 - Model Building and Evaluation",
+    "section": "8 Linear model coefficients",
+    "text": "8 Linear model coefficients\n\n\nCode\ncoef_df &lt;- read_csv(\"../output/lm_coefficients.csv\", show_col_types = FALSE)\ncoef_df |&gt;\n  slice_max(order_by = abs(Coefficient), n = 15) |&gt;\n  kbl(caption = \"Top 15 linear regression coefficients by absolute magnitude\") |&gt;\n  kable_styling(full_width = FALSE, bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nTop 15 linear regression coefficients by absolute magnitude\n\n\nFeature\nCoefficient\n\n\n\n\n(Intercept)\n27.9577558\n\n\nfestivalYes\n10.7543904\n\n\n`citySemi-Urban`\n10.1919029\n\n\nweather_conditionsSunny\n-6.5524699\n\n\ndelivery_person_ratings\n-4.3260943\n\n\nmultiple_deliveries\n3.1954587\n\n\nweather_conditionsSandstorms\n-2.5831554\n\n\nroad_traffic_density_ord\n2.4716586\n\n\nweather_conditionsStormy\n-2.4654229\n\n\nweather_conditionsWindy\n-2.3238596\n\n\nvehicle_condition\n-2.2756309\n\n\ncityUrban\n-2.0855891\n\n\ntype_of_vehicleelectric_scooter\n1.1174355\n\n\ntype_of_vehiclemotorcycle\n0.5701643\n\n\ndelivery_person_age\n0.4079911"
+  },
+  {
+    "objectID": "03_modelling.html#interpretation",
+    "href": "03_modelling.html#interpretation",
+    "title": "Phase 3 - Model Building and Evaluation",
+    "section": "9 Interpretation",
+    "text": "9 Interpretation\n\nLinear Regression provides a simple baseline and shows the direction of feature effects.\nDecision Tree captures non-linear patterns better than a purely linear model.\nThe better model is the one with lower RMSE and MAE and higher R2.\nIf both models are close, Linear Regression is easier to explain in an academic report."
+  },
+  {
+    "objectID": "03_modelling.html#expected-important-drivers",
+    "href": "03_modelling.html#expected-important-drivers",
+    "title": "Phase 3 - Model Building and Evaluation",
+    "section": "10 Expected important drivers",
+    "text": "10 Expected important drivers\n\n\nCode\ntribble(\n  ~Feature, ~Why_it_matters,\n  \"distance_km\", \"Longer routes increase travel time\",\n  \"pickup_delay_min\", \"Restaurant-side delay adds to final delivery time\",\n  \"road_traffic_density_ord\", \"Traffic congestion directly slows delivery\",\n  \"is_rush_hour\", \"Peak traffic periods increase delay\",\n  \"weather_conditions\", \"Poor weather can slow both pickup and travel\"\n) |&gt;\n  kbl(caption = \"Expected important features\") |&gt;\n  kable_styling(full_width = FALSE, bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nExpected important features\n\n\nFeature\nWhy_it_matters\n\n\n\n\ndistance_km\nLonger routes increase travel time\n\n\npickup_delay_min\nRestaurant-side delay adds to final delivery time\n\n\nroad_traffic_density_ord\nTraffic congestion directly slows delivery\n\n\nis_rush_hour\nPeak traffic periods increase delay\n\n\nweather_conditions\nPoor weather can slow both pickup and travel"
+  },
+  {
+    "objectID": "03_modelling.html#conclusion",
+    "href": "03_modelling.html#conclusion",
+    "title": "Phase 3 - Modelling the dataset",
+    "section": "11 Conclusion",
+    "text": "11 Conclusion\nThis modeling project demonstrated how simple regression and tree methods can provide actionable insights for a food delivery business. Even with basic models, it’s possible to achieve solid predictive performance while identifying the main bottlenecks in operational efficiency."
+  },
+  {
+    "objectID": "03_modelling.html#business-context",
+    "href": "03_modelling.html#business-context",
+    "title": "Phase 3 - Modelling the dataset",
+    "section": "1 Business Context",
+    "text": "1 Business Context\nTimely delivery is the most critical factor for customer satisfaction in food delivery services. Delays can directly impact customer retention, partner ratings, and cost efficiency.\nIn this analysis, we aim to predict the delivery time (in minutes) for an online food delivery platform using past data from multiple cities.\nThe objective is twofold: - Build predictive models that can estimate the expected delivery time for new orders.\n- Identify key factors that most influence the delivery time — such as traffic, weather, and order conditions."
+  },
+  {
+    "objectID": "03_modelling.html#key-questions",
+    "href": "03_modelling.html#key-questions",
+    "title": "Phase 3 - Modelling the dataset",
+    "section": "2 Key Questions",
+    "text": "2 Key Questions\nThis modeling project intends to answer: 1. Can we predict delivery time before the order starts?\n2. Which factors most strongly influence delivery time?\n3. How do simple models like Linear Regression compare to Decision Trees in performance?\n4. What conditions lead to higher or lower delivery times (e.g., weekends, rush hours, poor weather)?"
+  },
+  {
+    "objectID": "03_modelling.html#data-overview",
+    "href": "03_modelling.html#data-overview",
+    "title": "Phase 3 - Modelling the dataset",
+    "section": "3 Data Overview",
+    "text": "3 Data Overview\nThe cleaned dataset food_delivery_clean.csv contains various attributes describing each order and its delivery conditions.\nSample Features: - time_taken_min: Dependent variable (target) - distance_km: Distance from restaurant to customer - pickup_delay_min: Time delay before pickup - order_hour: Hour of order - is_weekend, is_rush_hour: Time-based indicators - delivery_person_age, delivery_person_ratings, vehicle_condition - road_traffic_density_ord, weather_conditions, city, etc.\n\n\nCode\ndf &lt;- read_csv(\"../output/food_delivery_clean.csv\", show_col_types = FALSE)\ndf |&gt;\n  glimpse()\n\n\nRows: 40,036\nColumns: 29\n$ id                          &lt;chr&gt; \"0xd987\", \"0x2784\", \"0xc8b6\", \"0xdb64\", \"0…\n$ delivery_person_id          &lt;chr&gt; \"KOCRES16DEL01\", \"PUNERES13DEL03\", \"LUDHRE…\n$ delivery_person_age         &lt;dbl&gt; 21, 23, 34, 24, 29, 34, 21, 31, 37, 33, 29…\n$ delivery_person_ratings     &lt;dbl&gt; 4.7, 4.7, 4.3, 4.7, 4.5, 4.9, 4.7, 4.7, 5.…\n$ restaurant_latitude         &lt;dbl&gt; 10.00306, 18.56245, 30.89958, 26.46350, 19…\n$ restaurant_longitude        &lt;dbl&gt; 76.30759, 73.91662, 75.80935, 80.37293, 72…\n$ delivery_location_latitude  &lt;dbl&gt; 10.04306, 18.65245, 30.91958, 26.59350, 19…\n$ delivery_location_longitude &lt;dbl&gt; 76.34759, 74.00662, 75.82935, 80.50293, 72…\n$ order_date                  &lt;date&gt; 2022-02-13, 2022-03-04, 2022-02-13, 2022-…\n$ time_orderd                 &lt;chr&gt; \"0-01-01T14:55:00Z\", \"0-01-01T17:30:00Z\", …\n$ time_order_picked           &lt;chr&gt; \"0-01-01T15:05:00Z\", \"0-01-01T17:40:00Z\", …\n$ weather_conditions          &lt;chr&gt; \"Stormy\", \"Sandstorms\", \"Sandstorms\", \"Fog…\n$ road_traffic_density        &lt;chr&gt; \"High\", \"Medium\", \"Low\", \"Jam\", \"Jam\", \"Ja…\n$ vehicle_condition           &lt;dbl&gt; 1, 1, 0, 1, 2, 0, 0, 2, 1, 2, 2, 0, 1, 2, …\n$ type_of_order               &lt;chr&gt; \"Meal\", \"Drinks\", \"Buffet\", \"Snack\", \"Buff…\n$ type_of_vehicle             &lt;chr&gt; \"motorcycle\", \"scooter\", \"motorcycle\", \"sc…\n$ multiple_deliveries         &lt;dbl&gt; 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, …\n$ festival                    &lt;chr&gt; \"No\", \"No\", \"No\", \"No\", \"No\", \"No\", \"No\", …\n$ city                        &lt;chr&gt; \"Metropolitian\", \"Metropolitian\", \"Metropo…\n$ time_taken_min              &lt;dbl&gt; 23, 21, 20, 41, 20, 41, 15, 26, 20, 39, 15…\n$ distance_km                 &lt;dbl&gt; 6.249312, 13.803306, 2.933540, 19.418347, …\n$ pickup_delay_min            &lt;dbl&gt; 10, 10, 10, 15, 10, 10, 15, 15, 15, 15, 15…\n$ order_hour                  &lt;dbl&gt; 14, 17, 9, 19, 20, 20, 21, 22, 8, 19, 18, …\n$ order_day_of_week           &lt;chr&gt; \"Sun\", \"Fri\", \"Sun\", \"Mon\", \"Sat\", \"Sun\", …\n$ order_month                 &lt;chr&gt; \"Feb\", \"Mar\", \"Feb\", \"Feb\", \"Apr\", \"Mar\", …\n$ is_weekend                  &lt;dbl&gt; 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, …\n$ age_group                   &lt;chr&gt; \"21-25\", \"21-25\", \"31-35\", \"21-25\", \"26-30…\n$ is_rush_hour                &lt;dbl&gt; 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, …\n$ road_traffic_density_ord    &lt;dbl&gt; 3, 2, 1, 4, 4, 4, 4, 1, 1, 4, 2, 4, 1, 1, …\n\n\nAfter cleaning, categorical variables were one-hot encoded and missing values removed, leaving a modeling dataset ready for regression tasks."
+  },
+  {
+    "objectID": "03_modelling.html#data-splitting-and-preparation",
+    "href": "03_modelling.html#data-splitting-and-preparation",
+    "title": "Phase 3 - Modelling the dataset",
+    "section": "4 Data Splitting and Preparation",
+    "text": "4 Data Splitting and Preparation\nWe divided the dataset into: - Training set: 80% for model training and cross-validation\n- Testing set: 20% for unbiased evaluation\n\n4.1 Data Partition Summary\n\n\nCode\ntrain_rows &lt;- floor(0.8 * nrow(df))\ncat(\"Training rows:\", train_rows, \"| Testing rows:\", nrow(df) - train_rows)\n\n\nTraining rows: 32028 | Testing rows: 8008"
+  },
+  {
+    "objectID": "03_modelling.html#modeling-approach",
+    "href": "03_modelling.html#modeling-approach",
+    "title": "Phase 3 - Modelling the dataset",
+    "section": "5 Modeling Approach",
+    "text": "5 Modeling Approach\nTwo models were trained using 5-fold cross-validation:\n\nLinear Regression (lm) — interpretable and baseline model.\n\nDecision Tree (rpart) — non-linear, handles feature interactions automatically.\n\nBoth models predict time_taken_min."
+  },
+  {
+    "objectID": "03_modelling.html#model-performance",
+    "href": "03_modelling.html#model-performance",
+    "title": "Phase 3 - Modelling the dataset",
+    "section": "6 Model Performance",
+    "text": "6 Model Performance\nThe comparison below shows how well each model performed on unseen test data.\n\n\n\nModel Performance Summary\n\n\nModel\nRMSE\nMAE\nR2\n\n\n\n\nLinear Regression\n6.274\n5.003\n0.498\n\n\nDecision Tree\n6.226\n4.895\n0.505\n\n\n\n\n\n\n6.1 RMSE Comparison"
+  },
+  {
+    "objectID": "03_modelling.html#model-interpretations",
+    "href": "03_modelling.html#model-interpretations",
+    "title": "Phase 3 - Modelling the dataset",
+    "section": "7 Model Interpretations",
+    "text": "7 Model Interpretations\n\n7.1 Linear Regression (Baseline)\nThe linear model assumes a linear relationship between predictors and delivery time.\n\n\n\n\n\n\n\n\n\n\nThe dashed line represents perfect predictions.\nScatter spread indicates the degree of model error.\n\n\n7.1.1 Residual Analysis\nResidual plots help check whether the model systematically over- or under-predicts.\n\n\n\n\n\n\n\n\n\nThe linear model shows some patterning — suggesting the relationships might not be strictly linear.\n\n\n\n\n7.2 Decision Tree Model\nDecision Trees can capture non-linear splits (e.g., traffic × distance interactions).\n\n\n\n\n\n\n\n\n\n\n7.2.1 Residuals\n\n\n\n\n\n\n\n\n\nDecision trees sometimes overfit to localized data but can better capture extreme cases compared to linear models."
+  },
+  {
+    "objectID": "03_modelling.html#feature-importance-linear-coefficients",
+    "href": "03_modelling.html#feature-importance-linear-coefficients",
+    "title": "Phase 3 - Modelling the dataset",
+    "section": "8 Feature Importance (Linear Coefficients)",
+    "text": "8 Feature Importance (Linear Coefficients)\nLet’s inspect the coefficients from the linear model to understand which features matter most.\n\n\nCode\ncoef_df &lt;- read_csv(\"../output/lm_coefficients.csv\", show_col_types = FALSE)\ncoef_df |&gt;\n  arrange(desc(abs(Coefficient))) |&gt;\n  head(10) |&gt;\n  kbl(caption = \"Top 10 Features Influencing Delivery Time\", booktabs = TRUE) |&gt;\n  kable_styling(full_width = FALSE)\n\n\n\nTop 10 Features Influencing Delivery Time\n\n\nFeature\nCoefficient\n\n\n\n\n(Intercept)\n27.957756\n\n\nfestivalYes\n10.754390\n\n\n`citySemi-Urban`\n10.191903\n\n\nweather_conditionsSunny\n-6.552470\n\n\ndelivery_person_ratings\n-4.326094\n\n\nmultiple_deliveries\n3.195459\n\n\nweather_conditionsSandstorms\n-2.583155\n\n\nroad_traffic_density_ord\n2.471659\n\n\nweather_conditionsStormy\n-2.465423\n\n\nweather_conditionsWindy\n-2.323860\n\n\n\n\n\nExample interpretation: - Positive coefficients (e.g., distance_km) increase predicted time. - Negative coefficients (e.g., delivery_person_ratings) reduce expected time."
+  },
+  {
+    "objectID": "03_modelling.html#insights-summary",
+    "href": "03_modelling.html#insights-summary",
+    "title": "Phase 3 - Modelling the dataset",
+    "section": "9 Insights Summary",
+    "text": "9 Insights Summary\n\n\n\n\n\n\n\nFinding\nInterpretation\n\n\n\n\nDistance & traffic\nLong distances and higher traffic levels significantly increase delivery times.\n\n\nPickup delay\nTime spent before a rider starts moving contributes directly to total delay.\n\n\nRatings & vehicle condition\nBetter-rated riders and better vehicles tend to deliver faster.\n\n\nWeekend & rush hour\nWeekends and rush hours generally show longer delivery times.\n\n\nModel comparison\nDecision Tree slightly improves prediction accuracy over Linear Regression, but at the cost of interpretability."
+  },
+  {
+    "objectID": "03_modelling.html#recommendations",
+    "href": "03_modelling.html#recommendations",
+    "title": "Phase 3 - Modelling the dataset",
+    "section": "10 Recommendations",
+    "text": "10 Recommendations\nBased on this modeling exercise, the food delivery platform could: - Prioritize high-rated riders for long or high-traffic deliveries. - Optimize dispatch time to reduce pickup delays. - Prepare staffing strategies for weekend/rush-hour surges. - Explore advanced models (e.g., Random Forest, XGBoost) for higher predictive accuracy."
+  },
+  {
+    "objectID": "03_modelling.html#next-steps",
+    "href": "03_modelling.html#next-steps",
+    "title": "Phase 3 - Modelling the dataset",
+    "section": "11 11. Next Steps",
+    "text": "11 11. Next Steps\nFor future iterations: - Include real-time weather and traffic APIs to improve prediction quality.\n- Add feature scaling and regularization (ridge/lasso) for linear models.\n- Analyze feature interactions using SHAP or variable importance plots for tree models."
+  }
+]
