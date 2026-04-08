@@ -1,5 +1,5 @@
 ---
-title: "Phase 3 - Modelling the dataset"
+title: "Phase 3: Modelling: Can We Predict When Your Food Arrives?"
 format:
   html:
     page-layout: article
@@ -11,190 +11,412 @@ format:
     toc-depth: 3
     toc-expand: true
     number-sections: true
+execute: 
+  warning: false
+  message: false
+  echo: true
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+pkgs <- c("tidyverse", "knitr", "kableExtra", "scales", "ggplot2")
+for (p in pkgs) if (!p %in% rownames(installed.packages())) install.packages(p, quiet = TRUE)
 library(tidyverse)
-library(readr)
-library(ggplot2)
+library(knitr)
 library(kableExtra)
+library(scales)
+library(ggplot2)
+
+df       <- read_csv("../output/food_delivery_clean.csv", show_col_types = FALSE)
+results  <- read_csv("../output/model_comparison.csv",   show_col_types = FALSE)
+coef_df  <- read_csv("../output/lm_coefficients.csv",    show_col_types = FALSE)
 ```
 
 ---
 
-## Business Context
+## The Problem
 
-Timely delivery is the most critical factor for customer satisfaction in food delivery services. Delays can directly impact customer retention, partner ratings, and cost efficiency.  
-In this analysis, we aim to **predict the delivery time (in minutes)** for an online food delivery platform using past data from multiple cities.  
+Imagine you are the operations head at a growing food delivery company.
 
-The objective is twofold:
-- Build predictive models that can estimate the expected delivery time for new orders.  
-- Identify key factors that most influence the delivery time — such as traffic, weather, and order conditions.
+Every day, thousands of orders are placed across the city. Riders are dispatched. Customers wait. But lately, customer satisfaction is dropping because late deliveries are becoming common.
+
+This creates two business questions:
+
+> 1. What is actually causing delays?  
+> 2. Can we predict delivery time before the order is dispatched?
+
+This project answers both questions using data.
+
+```{r avg-delivery}
+avg <- round(mean(df$time_taken_min, na.rm = TRUE), 1)
+med <- round(median(df$time_taken_min, na.rm = TRUE), 1)
+mx  <- round(max(df$time_taken_min, na.rm = TRUE), 1)
+
+tibble(
+  Metric = c("Average Delivery Time", "Median Delivery Time", "Longest Delivery"),
+  Value  = paste(c(avg, med, mx), "min")
+) |>
+  kbl(caption = "Summary of delivery times across all orders") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
+```
 
 ---
 
-## Key Questions
+## Business context
 
-This modeling project intends to answer:
-1. **Can we predict delivery time before the order starts?**  
-2. **Which factors most strongly influence delivery time?**  
-3. **How do simple models like Linear Regression compare to Decision Trees in performance?**  
-4. **What conditions lead to higher or lower delivery times (e.g., weekends, rush hours, poor weather)?**
+For a delivery platform, every extra minute matters.
+
+Longer delivery times can reduce customer trust, increase support complaints, raise refund costs, and make delivery operations less efficient. A business therefore needs both insight and prediction: insight to understand delays, and prediction to estimate delivery time in advance.
 
 ---
 
-## Data Overview
+## Dataset
 
-The cleaned dataset `food_delivery_clean.csv` contains various attributes describing each order and its delivery conditions.
+We analyse the cleaned food delivery dataset with operational, contextual, and behavioural variables.
 
-**Sample Features:**
-- `time_taken_min`: Dependent variable (target)
-- `distance_km`: Distance from restaurant to customer
-- `pickup_delay_min`: Time delay before pickup
-- `order_hour`: Hour of order
-- `is_weekend`, `is_rush_hour`: Time-based indicators
-- `delivery_person_age`, `delivery_person_ratings`, `vehicle_condition`
-- `road_traffic_density_ord`, `weather_conditions`, `city`, etc.
+```{r dataset-overview}
+tibble(
+  Column = c("Delivery Records", "Cities Covered", "Vehicle Types", "Target Variable"),
+  Value  = c(
+    format(nrow(df), big.mark = ","),
+    n_distinct(df$city, na.rm = TRUE),
+    n_distinct(df$type_of_vehicle, na.rm = TRUE),
+    "time_taken_min"
+  )
+) |>
+  kbl(caption = "Dataset overview") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
+```
 
-```{r data-glimpse}
-df <- read_csv("../output/food_delivery_clean.csv", show_col_types = FALSE)
+The models use features such as distance, pickup delay, traffic density, weather, city type, vehicle type, festival indicator, order type, rider age, rider rating, and time-related variables.
+
+---
+
+## Question 1
+
+### Does distance explain delivery time?
+
+Distance is the most obvious suspect. A longer route should usually take more time.
+
+```{r distance-bucket-table}
 df |>
-  glimpse()
+  mutate(
+    dist_bucket = cut(
+      distance_km,
+      breaks = c(0, 5, 10, 15, 20, Inf),
+      labels = c("0–5 km", "5–10 km", "10–15 km", "15–20 km", "20+ km")
+    )
+  ) |>
+  group_by(dist_bucket) |>
+  summarise(
+    Orders = n(),
+    Avg_Time_Min = round(mean(time_taken_min, na.rm = TRUE), 1),
+    Median_Time_Min = round(median(time_taken_min, na.rm = TRUE), 1),
+    .groups = "drop"
+  ) |>
+  drop_na() |>
+  kbl(caption = "Delivery time by distance bucket") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
 ```
 
-After cleaning, categorical variables were **one-hot encoded** and missing values removed, leaving a modeling dataset ready for regression tasks.
+**Interpretation:** Delivery time rises as distance rises, which confirms that route length is an important operational driver. However, distance alone does not explain all delays, so the business must also examine traffic, pickup delay, and timing effects.
 
 ---
 
-## Data Splitting and Preparation
+## Question 2
 
-We divided the dataset into:
-- **Training set**: 80% for model training and cross-validation  
-- **Testing set**: 20% for unbiased evaluation  
+### How much does traffic contribute?
 
-### Data Partition Summary
-```{r data-split-summary}
-train_rows <- floor(0.8 * nrow(df))
-cat("Training rows:", train_rows, "| Testing rows:", nrow(df) - train_rows)
+Traffic is one of the strongest real-world constraints on delivery performance.
+
+```{r traffic-table}
+df |>
+  filter(!is.na(road_traffic_density)) |>
+  group_by(Traffic = road_traffic_density) |>
+  summarise(
+    Orders = n(),
+    Avg_Time_Min = round(mean(time_taken_min, na.rm = TRUE), 1),
+    Median_Time_Min = round(median(time_taken_min, na.rm = TRUE), 1),
+    .groups = "drop"
+  ) |>
+  arrange(Avg_Time_Min) |>
+  kbl(caption = "Delivery time by traffic condition") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
 ```
+
+```{r traffic-impact}
+low_time <- mean(df$time_taken_min[df$road_traffic_density == "Low"], na.rm = TRUE)
+jam_time <- mean(df$time_taken_min[df$road_traffic_density == "Jam"], na.rm = TRUE)
+tibble(
+  Comparison = "Jam traffic vs Low traffic",
+  `Extra average minutes` = round(jam_time - low_time, 1)
+) |>
+  kbl(caption = "Estimated extra delay caused by traffic jams") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
+```
+
+**Interpretation:** Traffic density is not just a background condition; it is a direct operational risk. If jam conditions add several minutes on average, then ETA systems and rider allocation should respond dynamically to traffic conditions.
 
 ---
 
-## Modeling Approach
+## Question 3
 
-Two models were trained using 5-fold cross-validation:
+### Is pickup delay a hidden bottleneck?
 
-1. **Linear Regression (`lm`)** — interpretable and baseline model.  
-2. **Decision Tree (`rpart`)** — non-linear, handles feature interactions automatically.
+Pickup delay is the time between order placement and actual pickup. It often reflects restaurant-side delay, rider assignment lag, or dispatch inefficiency.
 
-Both models predict `time_taken_min`.
+```{r pickup-delay-analysis}
+df |>
+  filter(!is.na(pickup_delay_min), pickup_delay_min >= 0) |>
+  mutate(
+    delay_bucket = cut(
+      pickup_delay_min,
+      breaks = c(0, 5, 10, 20, 40, Inf),
+      labels = c("0–5 min", "5–10 min", "10–20 min", "20–40 min", "40+ min")
+    )
+  ) |>
+  group_by(delay_bucket) |>
+  summarise(
+    Orders = n(),
+    Avg_Total_Delivery = round(mean(time_taken_min, na.rm = TRUE), 1),
+    .groups = "drop"
+  ) |>
+  drop_na() |>
+  kbl(caption = "Total delivery time by pickup delay bucket") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
+```
+
+**Interpretation:** Pickup delay is one of the most actionable variables because it is partly controllable. Businesses cannot control weather, but they can improve restaurant coordination, rider dispatch timing, and batching logic.
 
 ---
 
-## Model Performance
+## Question 4
 
-The comparison below shows how well each model performed on unseen test data.
+### Do rush hour and city type change performance?
 
-```{r model-results, echo=FALSE}
-results_df <- read_csv("../output/model_comparison.csv", show_col_types = FALSE)
-results_df |>
-  kbl(caption = "Model Performance Summary", booktabs = TRUE) |>
-  kable_styling(full_width = FALSE)
+Time of day and city environment shape the delivery ecosystem.
+
+```{r rush-hour-table}
+df |>
+  filter(!is.na(is_rush_hour)) |>
+  group_by(`Rush Hour` = ifelse(is_rush_hour == 1, "Yes", "No")) |>
+  summarise(
+    Orders = n(),
+    Avg_Time_Min = round(mean(time_taken_min, na.rm = TRUE), 1),
+    .groups = "drop"
+  ) |>
+  kbl(caption = "Rush hour vs non-rush hour performance") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
 ```
 
-### RMSE Comparison
+```{r city-table}
+df |>
+  filter(!is.na(city)) |>
+  group_by(City = city) |>
+  summarise(
+    Orders = n(),
+    Avg_Time_Min = round(mean(time_taken_min, na.rm = TRUE), 1),
+    Avg_Distance = round(mean(distance_km, na.rm = TRUE), 1),
+    .groups = "drop"
+  ) |>
+  arrange(Avg_Time_Min) |>
+  kbl(caption = "Delivery performance by city type") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
+```
 
-```{r rmse-plot, echo=FALSE, out.width="80%"}
+**Interpretation:** If metro deliveries are slower despite strong market density, that suggests congestion or dispatch overload. The business can use this insight to position more riders in peak metro zones and refine incentive strategies.
+
+---
+
+## Question 5
+
+### Do weather and festivals affect delivery outcomes?
+
+Some variables are outside direct control, but still important for planning.
+
+```{r weather-table}
+df |>
+  filter(!is.na(weather_conditions)) |>
+  group_by(Weather = weather_conditions) |>
+  summarise(
+    Orders = n(),
+    Avg_Time_Min = round(mean(time_taken_min, na.rm = TRUE), 1),
+    .groups = "drop"
+  ) |>
+  arrange(desc(Avg_Time_Min)) |>
+  kbl(caption = "Average delivery time by weather condition") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
+```
+
+```{r festival-table}
+df |>
+  filter(!is.na(festival)) |>
+  group_by(Festival = festival) |>
+  summarise(
+    Orders = n(),
+    Avg_Time_Min = round(mean(time_taken_min, na.rm = TRUE), 1),
+    .groups = "drop"
+  ) |>
+  kbl(caption = "Average delivery time on festival vs non-festival days") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
+```
+
+**Interpretation:** These variables are useful for forecasting and customer communication. Even if the business cannot eliminate bad weather, it can adjust promises, staffing, and app messaging.
+
+---
+
+## Predictive modelling
+
+After understanding the delay drivers, the next step is prediction.
+
+We train two models:
+- **Linear Regression** for interpretability.
+- **Decision Tree Regression** for simple non-linear decision rules.
+
+The goal is not only to get a good score, but also to produce a model the business can understand and use.
+
+```{r model-results}
+results |>
+  arrange(RMSE) |>
+  mutate(
+    RMSE = round(RMSE, 2),
+    MAE  = round(MAE, 2),
+    R2   = round(R2, 3)
+  ) |>
+  kbl(caption = "Model performance on the test set") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
+```
+
+```{r rmse-plot, echo=FALSE, out.width='85%'}
 knitr::include_graphics("../output/plots/19_model_rmse_comparison.png")
 ```
 
+**Interpretation:** The better model is the one with lower RMSE and MAE and higher R2. In business terms, lower MAE means the ETA shown to the customer is closer to reality on average.
+
 ---
 
-## Model Interpretations
+## How good are the predictions?
 
-### Linear Regression (Baseline)
-The linear model assumes a linear relationship between predictors and delivery time.
+The following plots compare actual and predicted delivery time.
 
-```{r lm-plot, echo=FALSE, out.width="80%"}
+### Linear Regression
+
+```{r lm-actual-predicted, echo=FALSE, out.width='85%'}
 knitr::include_graphics("../output/plots/15_lm_actual_vs_predicted.png")
 ```
 
-- The dashed line represents perfect predictions.
-- Scatter spread indicates the degree of model error.
-
-#### Residual Analysis
-Residual plots help check whether the model systematically over- or under-predicts.
-
-```{r lm-resid, echo=FALSE, out.width="80%"}
+```{r lm-residual, echo=FALSE, out.width='85%'}
 knitr::include_graphics("../output/plots/17_lm_residual_plot.png")
 ```
 
-The linear model shows some patterning — suggesting the relationships might not be strictly linear.
+### Decision Tree
 
----
-
-### Decision Tree Model
-
-Decision Trees can capture non-linear splits (e.g., traffic × distance interactions).
-
-```{r dt-plot, echo=FALSE, out.width="80%"}
+```{r dt-actual-predicted, echo=FALSE, out.width='85%'}
 knitr::include_graphics("../output/plots/16_dt_actual_vs_predicted.png")
 ```
 
-#### Residuals
-
-```{r dt-resid, echo=FALSE, out.width="80%"}
+```{r dt-residual, echo=FALSE, out.width='85%'}
 knitr::include_graphics("../output/plots/18_dt_residual_plot.png")
 ```
 
-Decision trees sometimes overfit to localized data but can better capture extreme cases compared to linear models.
+**Interpretation:** The closer the points are to the diagonal line, the better the prediction. Residual plots help us see whether the model systematically overpredicts or underpredicts.
 
 ---
 
-## Feature Importance (Linear Coefficients)
+## Which features matter most?
 
-Let's inspect the coefficients from the linear model to understand which features matter most.
+Linear Regression is especially useful because coefficients can be interpreted directly.
 
 ```{r coefficients-table}
-coef_df <- read_csv("../output/lm_coefficients.csv", show_col_types = FALSE)
 coef_df |>
+  filter(Feature != "(Intercept)") |>
+  mutate(Direction = ifelse(Coefficient > 0, "Increases time", "Decreases time")) |>
   arrange(desc(abs(Coefficient))) |>
-  head(10) |>
-  kbl(caption = "Top 10 Features Influencing Delivery Time", booktabs = TRUE) |>
-  kable_styling(full_width = FALSE)
+  slice_head(n = 15) |>
+  select(Feature, Coefficient, Direction) |>
+  kbl(caption = "Top 15 coefficients from Linear Regression") |>
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
 ```
 
-**Example interpretation:**
-- Positive coefficients (e.g., `distance_km`) increase predicted time.
-- Negative coefficients (e.g., `delivery_person_ratings`) reduce expected time.
+Here is how to read the coefficient table:
+- A **positive coefficient** means the variable increases predicted delivery time.
+- A **negative coefficient** means the variable reduces predicted delivery time.
+- Larger absolute values indicate stronger influence, though interpretation must consider variable scale and encoding.
+
+### Business interpretation of likely important features
+
+- `distance_km`: longer routes increase time.
+- `pickup_delay_min`: restaurant or dispatch delay directly affects final delivery time.
+- `road_traffic_density_ord`: heavier traffic increases travel time.
+- `is_rush_hour`: peak periods create congestion and slower operations.
+- categorical dummy variables: some cities, weather types, or vehicle types may systematically change performance.
 
 ---
 
-## Insights Summary
+## What does the model answer for the business?
 
-| Finding | Interpretation |
-|:---------|:----------------|
-| **Distance & traffic** | Long distances and higher traffic levels significantly increase delivery times. |
-| **Pickup delay** | Time spent before a rider starts moving contributes directly to total delay. |
-| **Ratings & vehicle condition** | Better-rated riders and better vehicles tend to deliver faster. |
-| **Weekend & rush hour** | Weekends and rush hours generally show longer delivery times. |
-| **Model comparison** | Decision Tree slightly improves prediction accuracy over Linear Regression, but at the cost of interpretability. |
+The modelling phase gives practical answers:
+
+### 1. Can we estimate delivery time before dispatch?
+Yes. The models provide an estimated delivery time using information available early in the order lifecycle.
+
+### 2. What variables should managers monitor most closely?
+Distance, traffic, pickup delay, rush hour status, weather, and city type.
+
+### 3. What kind of delays can be acted on immediately?
+Pickup delay and rush-hour allocation can be improved operationally. Traffic and weather should be handled through communication and routing strategy.
+
+### 4. Which model is better for this project?
+If the Decision Tree performs better, it is better for prediction. If Linear Regression performs competitively, it is better for explanation and reporting. For a student project, presenting both gives a balanced and credible analysis.
 
 ---
 
 ## Recommendations
 
-Based on this modeling exercise, the food delivery platform could:
-- Prioritize high-rated riders for long or high-traffic deliveries.
-- Optimize dispatch time to reduce pickup delays.
-- Prepare staffing strategies for weekend/rush-hour surges.
-- Explore advanced models (e.g., Random Forest, XGBoost) for higher predictive accuracy.
+Based on the full analysis, the business should consider the following actions:
 
-
-
-## Conclusion
-
-This modeling project demonstrated how simple regression and tree methods can provide actionable insights for a food delivery business. Even with basic models, it’s possible to achieve solid predictive performance while identifying the main bottlenecks in operational efficiency.
+```{r recommendations}
+tibble(
+  Problem = c(
+    "High traffic delays",
+    "Pickup-side bottlenecks",
+    "Rush hour congestion",
+    "Weather-related slowdown",
+    "Uneven city performance"
+  ),
+  Recommendation = c(
+    "Use traffic-aware ETA estimation and dynamic rider routing.",
+    "Track restaurant prep delays and assign riders closer to pickup points.",
+    "Pre-position more riders before lunch and dinner peaks.",
+    "Show delay warnings during rain, fog, or storms and adjust ETA promises.",
+    "Allocate more fleet capacity to slower-performing city zones."
+  ),
+  Expected_Benefit = c(
+    "More accurate ETAs and fewer late-order complaints",
+    "Lower end-to-end delivery time",
+    "Better service during peak demand windows",
+    "Improved customer trust and reduced refund pressure",
+    "More balanced service quality across regions"
+  )
+) |>
+  kbl(caption = "Actionable business recommendations") |>
+  kable_styling(full_width = TRUE, bootstrap_options = c("striped", "hover"))
+```
 
 ---
+
+## Final takeaway
+
+This project shows that food delivery delays are not random. They are shaped by identifiable operational patterns such as distance, traffic, pickup lag, rush-hour conditions, city type, weather, and festival periods.
+
+By combining descriptive analysis with predictive modelling, the business can do two things:
+1. **understand why delays happen**, and
+2. **predict likely delivery time before dispatch**.
+
+That makes the analysis useful not only as a student modelling exercise, but also as a decision-support tool for delivery operations.
+
+---
+
+## Navigation
+
+- [Back to EDA](02_eda.qmd)
+- [Return to Home](../index.qmd)
